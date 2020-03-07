@@ -19,14 +19,16 @@ var GameCanvas = {
 
 module.exports = GameCanvas;
 },{"./consts.js":2,"./region.js":5}],2:[function(require,module,exports){
-var continent_columns = 5;
-var continent_rows = 5;
-var continent_width = 3;
-var continent_height = 3;
+var continent_columns = 2;
+var continent_rows = 2;
+var continent_width = 2;
+var continent_height = 2;
 var region_width = 50;
 var region_height = 50;
 var noplayer = "FREE"
 var players = [ "p1", "p2 " ];
+var player_colors = ['#00af9d','#ffb652','#cd66cc','#66bc29','#0096db','#3a7dda','#ffe100'];
+
 var exports = module.exports = {};
 
 exports.CONTINENT_COLUMNS =  continent_columns;
@@ -37,30 +39,42 @@ exports.REGION_WIDTH =  region_width;
 exports.REGION_HEIGHT =  region_height;
 exports.PLAYERS = players;
 exports.NOPLAYER = noplayer;
+exports.PLAYER_COLORS = player_colors;
 },{}],3:[function(require,module,exports){
 var canvas = require('./canvas.js');
 var consts = require('./consts.js');
 var region = require('./region.js');
-var continent_matrix = [];
+
+var regions = [];
 
 
 
 var GameBoard = {
     init: function() {
-        for (row=0; row<consts.CONTINENT_ROWS;row++) {
+        for (row=1; row<=consts.CONTINENT_ROWS;row++) {
             var continent_row = [];
-            for (col=0; col<consts.CONTINENT_COLUMNS;col++) {
-                var regobj = region.getRegionInstance(row,col);
-                continent_row.push(regobj);
-                canvas.addRegion(regobj);
+            for (col=1; col<=consts.CONTINENT_COLUMNS;col++) {
 
-                continent_matrix.push(regobj);
+                buildContinentRow(row, col);
             }
             canvas.addNewLine();
         }
+
+        function buildContinentRow(cont_row, cont_col) {
+
+            for (i=1; i<= consts.CONTINENT_WIDTH;i++) {
+
+                var regionrow = cont_row;
+                var regioncol = consts.CONTINENT_WIDTH*(cont_col-1)+i;
+
+                var regobj = region.getRegionInstance(regionrow, regioncol, cont_row, cont_col);
+                regions.push(regobj);
+                canvas.addRegion(regobj);
+            }
+        }
     },
     reset: function() {
-        continent_matrix.forEach(reg=>reg.reset());
+        regions.forEach(reg=>reg.reset());
 
     }
 }
@@ -80,10 +94,12 @@ gameboard.init();
 var canvas = require ('./canvas');
 var consts = require ('./consts.js');
 
-function region(row, col) {
+function region(row, col, continent_row, continent_col) {
     var elementid = "region_"+row+"_"+col;
     var row = row;
     var col= col;
+    var continent_row = continent_row;
+    var continent_col = continent_col;
     var troopcount = 0;
     var occupant = consts.NOPLAYER;
     var element = getRegionElement();
@@ -93,6 +109,7 @@ function region(row, col) {
         reg.id = elementid;
         reg.style.height = consts.REGION_HEIGHT + "px";
         reg.style.width = consts.REGION_WIDTH + "px";
+        reg.style.color = "blue";
         reg.innerText = troopcount;
         reg.addEventListener("click", clickedbutton);  
  
@@ -101,6 +118,7 @@ function region(row, col) {
 
     function clickedbutton() {
         console.log("coords: "+elementid);
+        console.log("row: " + continent_row + ";col: " + continent_col);
         troopcount++;
         element.innerText=troopcount;
     }
@@ -121,8 +139,8 @@ var RegionFactory = {
 
     },
 
-    getRegionInstance: function(row, col) {
-        return new region(row,col);
+    getRegionInstance: function(row, col, cont_row, cont_col) {
+        return new region(row, col, cont_row, cont_col);
     }
 
 };

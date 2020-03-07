@@ -1,26 +1,37 @@
 var canvas = require('./canvas.js');
 var consts = require('./consts.js');
 var region = require('./region.js');
-var continent_matrix = [];
+
+var regions = [];
 
 
 
 var GameBoard = {
     init: function() {
-        for (row=0; row<consts.CONTINENT_ROWS;row++) {
+        for (row=1; row<=consts.CONTINENT_ROWS;row++) {
             var continent_row = [];
-            for (col=0; col<consts.CONTINENT_COLUMNS;col++) {
-                var regobj = region.getRegionInstance(row,col);
-                continent_row.push(regobj);
-                canvas.addRegion(regobj);
+            for (col=1; col<=consts.CONTINENT_COLUMNS;col++) {
 
-                continent_matrix.push(regobj);
+                buildContinentRow(row, col);
             }
             canvas.addNewLine();
         }
+
+        function buildContinentRow(cont_row, cont_col) {
+
+            for (i=1; i<= consts.CONTINENT_WIDTH;i++) {
+
+                var regionrow = cont_row;
+                var regioncol = consts.CONTINENT_WIDTH*(cont_col-1)+i;
+
+                var regobj = region.getRegionInstance(regionrow, regioncol, cont_row, cont_col);
+                regions.push(regobj);
+                canvas.addRegion(regobj);
+            }
+        }
     },
     reset: function() {
-        continent_matrix.forEach(reg=>reg.reset());
+        regions.forEach(reg=>reg.reset());
 
     }
 }

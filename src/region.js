@@ -1,10 +1,12 @@
 var canvas = require ('./canvas');
 var consts = require ('./consts.js');
 
-function region(row, col) {
+function region(row, col, continent_row, continent_col) {
     var elementid = "region_"+row+"_"+col;
     var row = row;
     var col= col;
+    var continent_row = continent_row;
+    var continent_col = continent_col;
     var troopcount = 0;
     var occupant = consts.NOPLAYER;
     var element = getRegionElement();
@@ -14,6 +16,7 @@ function region(row, col) {
         reg.id = elementid;
         reg.style.height = consts.REGION_HEIGHT + "px";
         reg.style.width = consts.REGION_WIDTH + "px";
+        reg.style.color = "blue";
         reg.innerText = troopcount;
         reg.addEventListener("click", clickedbutton);  
  
@@ -22,6 +25,7 @@ function region(row, col) {
 
     function clickedbutton() {
         console.log("coords: "+elementid);
+        console.log("row: " + continent_row + ";col: " + continent_col);
         troopcount++;
         element.innerText=troopcount;
     }
@@ -42,8 +46,8 @@ var RegionFactory = {
 
     },
 
-    getRegionInstance: function(row, col) {
-        return new region(row,col);
+    getRegionInstance: function(row, col, cont_row, cont_col) {
+        return new region(row, col, cont_row, cont_col);
     }
 
 };
