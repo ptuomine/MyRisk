@@ -52,12 +52,16 @@ var GameBoard = {
             for (col=0; col<consts.CONTINENT_COLUMNS;col++) {
                 var regobj = region.getRegionInstance(row,col);
                 continent_row.push(regobj);
-                regobj.updateTroopCount(1);
-
                 canvas.addRegion(regobj);
+
+                continent_matrix.push(regobj);
             }
             canvas.addNewLine();
         }
+    },
+    reset: function() {
+        continent_matrix.forEach(reg=>reg.reset());
+
     }
 }
 
@@ -66,8 +70,9 @@ module.exports = GameBoard;
 var canvas = require('./canvas');
 var gameboard = require('./gameboard.js');
 
-function clickedbutton() {
-    alert("yes");
+window.resetGameBoard = function() {
+    console.log("reset game board");
+    gameboard.reset();
 }
 
 gameboard.init();
@@ -96,13 +101,18 @@ function region(row, col) {
 
     function clickedbutton() {
         console.log("coords: "+elementid);
-        element.innerText="x";
+        troopcount++;
+        element.innerText=troopcount;
     }
 
     this.element = element;
 
     this.updateTroopCount = function (count) {
         this.element.innerText=count;
+    }
+
+    this.reset = function() {
+        this.updateTroopCount(0);
     }
 }
 

@@ -12,12 +12,16 @@ var GameBoard = {
             for (col=0; col<consts.CONTINENT_COLUMNS;col++) {
                 var regobj = region.getRegionInstance(row,col);
                 continent_row.push(regobj);
-                regobj.updateTroopCount(1);
-
                 canvas.addRegion(regobj);
+
+                continent_matrix.push(regobj);
             }
             canvas.addNewLine();
         }
+    },
+    reset: function() {
+        continent_matrix.forEach(reg=>reg.reset());
+
     }
 }
 

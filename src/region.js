@@ -22,13 +22,18 @@ function region(row, col) {
 
     function clickedbutton() {
         console.log("coords: "+elementid);
-        element.innerText="x";
+        troopcount++;
+        element.innerText=troopcount;
     }
 
     this.element = element;
 
     this.updateTroopCount = function (count) {
         this.element.innerText=count;
+    }
+
+    this.reset = function() {
+        this.updateTroopCount(0);
     }
 }
 
