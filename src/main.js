@@ -5,5 +5,4 @@ function clickedbutton() {
     alert("yes");
 }
 
-canvas.init();
 gameboard.init();
