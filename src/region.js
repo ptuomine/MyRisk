@@ -7,6 +7,7 @@ function region(row, col) {
     var col= col;
     var troopcount = 0;
     var occupant = consts.NOPLAYER;
+    var element = getRegionElement();
 
     function getRegionElement() {
         var reg = document.createElement("button");
@@ -14,22 +15,22 @@ function region(row, col) {
         reg.style.height = consts.REGION_HEIGHT + "px";
         reg.style.width = consts.REGION_WIDTH + "px";
         reg.innerText = troopcount;
+        reg.addEventListener("click", clickedbutton);  
  
         return reg;
     }
 
-    this.element = getRegionElement();
+    function clickedbutton() {
+        console.log("coords: "+elementid);
+        element.innerText="x";
+    }
+
+    this.element = element;
 
     this.updateTroopCount = function (count) {
         this.element.innerText=count;
     }
 }
-
-// region.prototype = {
-//     updateTroopCount: function(count) {
-//         this.element.innerText=count;
-//     }
-// }
 
 var RegionFactory = {
     init: function() {

@@ -9,17 +9,11 @@ var starty = 10;
 
 var GameCanvas = {
     addRegion: function(region) {
-        var regelem = region.element;
-
-        regelem.addEventListener("click", this.clickedbutton.bind(null, regelem));        
-        canvas.appendChild(regelem); 
+      
+        canvas.appendChild(region.element); 
     },
     addNewLine: function() {
         canvas.appendChild(document.createElement("br"));
-    },
-    clickedbutton: function(regelem, ev) {
-        console.log("coords: "+regelem.nodeid);
-        regelem.innerText="x";
     }
 }
 
@@ -87,6 +81,7 @@ function region(row, col) {
     var col= col;
     var troopcount = 0;
     var occupant = consts.NOPLAYER;
+    var element = getRegionElement();
 
     function getRegionElement() {
         var reg = document.createElement("button");
@@ -94,22 +89,22 @@ function region(row, col) {
         reg.style.height = consts.REGION_HEIGHT + "px";
         reg.style.width = consts.REGION_WIDTH + "px";
         reg.innerText = troopcount;
+        reg.addEventListener("click", clickedbutton);  
  
         return reg;
     }
 
-    this.element = getRegionElement();
+    function clickedbutton() {
+        console.log("coords: "+elementid);
+        element.innerText="x";
+    }
+
+    this.element = element;
 
     this.updateTroopCount = function (count) {
         this.element.innerText=count;
     }
 }
-
-// region.prototype = {
-//     updateTroopCount: function(count) {
-//         this.element.innerText=count;
-//     }
-// }
 
 var RegionFactory = {
     init: function() {

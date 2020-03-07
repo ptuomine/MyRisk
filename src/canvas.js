@@ -8,17 +8,11 @@ var starty = 10;
 
 var GameCanvas = {
     addRegion: function(region) {
-        var regelem = region.element;
-
-        regelem.addEventListener("click", this.clickedbutton.bind(null, regelem));        
-        canvas.appendChild(regelem); 
+      
+        canvas.appendChild(region.element); 
     },
     addNewLine: function() {
         canvas.appendChild(document.createElement("br"));
-    },
-    clickedbutton: function(regelem, ev) {
-        console.log("coords: "+regelem.nodeid);
-        regelem.innerText="x";
     }
 }
 
