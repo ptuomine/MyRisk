@@ -1,4 +1,5 @@
 var consts = require('./consts.js');
+var region = require('./region.js');
 
 var canvas = document.getElementById('myriskcanvas'); 
 
@@ -11,23 +12,24 @@ var GameCanvas = {
         for (row=0; row<consts.CONTINENT_ROWS;row++) {
             var canvas_row = [];
             for (col=0; col<consts.CONTINENT_COLUMNS;col++) {
-                var region = document.createElement("button");
-                region.id = "region_"+row + "_" + col;
-                region.style.height = consts.REGION_HEIGHT + "px";
-                region.style.width = consts.REGION_WIDTH + "px";
-                region.addEventListener("click", this.clickedbutton.bind(null, region.id));
-                region.innerText="y";
 
-                canvas.appendChild(region); 
+                var regelem = region.getRegionElement(row, col);
+
+                regelem.addEventListener("click", this.clickedbutton.bind(null, regelem));
+                regelem.innerText="y";
+        
+                canvas.appendChild(regelem); 
             }
             canvas.appendChild(document.createElement("br"));
         }
     },
-    clickedbutton: function(nodeid, ev) {
-        console.log("coords: "+nodeid);
-        var reg = document.getElementById(nodeid);
-        reg.innerText="x";
-
+    clickedbutton: function(regelem, ev) {
+        console.log("coords: "+regelem.nodeid);
+        regelem.innerText="x";
+    },
+    updateregion: function(region) {
+        var reg = document.getElementById(region.elementid);
+        reg.innerText=region.troopcount;
     }
 }
 
