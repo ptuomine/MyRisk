@@ -12,4 +12,5 @@ window.resetGameBoard = function() {
 gameboard.init();
 gameplayers.init();
 gameboard.startGame();
-gamestate.createGameStats();
+gamestate.init();
+gamestate.updateGameStats();

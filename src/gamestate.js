@@ -1,11 +1,13 @@
 var consts = require('./consts.js');
 var gameplayers = require('./gameplayers');
 
+var gamestats = [];
+
 var GameState = {
     startGame: function () {
 
     },
-    createGameStats: function () {
+    init: function () {
 
         var table = document.getElementById("playertable");
         var players = gameplayers.getAllPlayers();
@@ -26,35 +28,45 @@ var GameState = {
             table.appendChild(playerrow);
 
             // player name
-            var playercol = document.createElement("td");
-            playercol.innerText = player.getName();
-            playerrow.appendChild(playercol);
+            var namecol = document.createElement("td");
+            namecol.innerText = player.getName();
+            playerrow.appendChild(namecol);
 
             // continents
-            var playercol = document.createElement("td");
-            playercol.innerText = player.getState().continents.length;
-            playerrow.appendChild(playercol);
+            var contcol = document.createElement("td");
+            playerrow.appendChild(contcol);
 
             // regions
-            var playercol = document.createElement("td");
-            playercol.innerText = player.getState().regions.length;
-            playerrow.appendChild(playercol);
+            var regcol = document.createElement("td");
+            playerrow.appendChild(regcol);
 
             // troops
-            var playercol = document.createElement("td");
-            playercol.innerText = player.getState().getTroopCount();
-            playerrow.appendChild(playercol);
+            var troopcol = document.createElement("td");
+            playerrow.appendChild(troopcol);
 
             // cards
-            var playercol = document.createElement("td");
-            playercol.innerText = player.getState().cards;
-            playerrow.appendChild(playercol);
+            var cardcol = document.createElement("td");
+            playerrow.appendChild(cardcol);
+
+            // gamestats
+            gamestats.push({
+                player: player,
+                contcol: contcol,
+                regcol: regcol,
+                troopcol: troopcol,
+                cardcol: cardcol
+            })
 
         })
+    },
+    updateGameStats : function() {
 
-
-
-        return table;
+        gamestats.forEach(stat => {
+            stat.contcol.innerText = stat.player.getState().continents.length;
+            stat.regcol.innerText = stat.player.getState().regions.length;
+            stat.troopcol.innerText = stat.player.getState().getTroopCount();
+            stat.cardcol.innerText = stat.player.getState().cards;
+        })
 
     }
 }
