@@ -2,25 +2,20 @@
 var consts = require('./consts.js');
 var region = require('./region.js');
 
-var canvas = document.getElementById('myriskcanvas'); 
+var continentsArea = document.getElementById('continentsArea'); 
 
 var startx = 10;
 var starty = 10;
 
 var GameCanvas = {
-    addRegion: function(region) {
-        canvas.appendChild(region.element); 
-    },
-    addNewLine: function() {
-        canvas.appendChild(document.createElement("br"));
-    },
+
     addContinent: function(continent) {
-        canvas.appendChild(continent.element);
+        continentsArea.appendChild(continent.element);
     },
     addDivRow: function() {
         var divrow = document.createElement("div");
         divrow.classList.add("Row");
-        canvas.appendChild(divrow);
+        continentsArea.appendChild(divrow);
     }
 
 }
@@ -74,6 +69,14 @@ var Continent = function(row, col) {
     }
 
     this.element = getContinentElement();
+
+    this.addRegion = function(region) {
+        this.element.appendChild(region.element); 
+    }
+
+    this.addNewLine = function() {
+        this.element.appendChild(document.createElement("br"));
+    }
 }
 
 var ContinentFactory = {
@@ -93,42 +96,39 @@ var regionFactory = require('./region.js');
 
 var regions = [];
 
-
-
 var GameBoard = {
-    init: function() {
-        for (row=1; row<=consts.CONTINENT_ROWS;row++) {
-            var continent_row = [];
+    init: function () {
+        for (row = 1; row <= consts.CONTINENT_ROWS; row++) {
             canvas.addDivRow();
-            for (col=1; col<=consts.CONTINENT_COLUMNS;col++) {
+            for (col = 1; col <= consts.CONTINENT_COLUMNS; col++) {
                 buildContinent(row, col);
-
-                //buildContinentRow(row, col);
             }
-            //canvas.addNewLine();
         }
 
-        function buildContinent(cont_row, cont_col) 
-        {
+        function buildContinent(cont_row, cont_col) {
             var contobj = continentFactory.getContinentInstance(row, col);
+            buildRegions(row, col, contobj);
             canvas.addContinent(contobj);
         }
 
-        function buildContinentRow(cont_row, cont_col) {
+        function buildRegions(cont_row, cont_col, contobj) {
 
-            for (i=1; i<= consts.CONTINENT_WIDTH;i++) {
+            for (i = 1; i <= consts.CONTINENT_WIDTH; i++) {
+                for (j = 1; j <= consts.CONTINENT_HEIGHT; j++) {
 
-                var regionrow = cont_row;
-                var regioncol = consts.CONTINENT_WIDTH*(cont_col-1)+i;
+                    var regionrow = consts.CONTINENT_HEIGHT * (cont_row - 1) + j;
+                    var regioncol = consts.CONTINENT_WIDTH * (cont_col - 1) + i;
 
-                var regobj = regionFactory.getRegionInstance(regionrow, regioncol, cont_row, cont_col);
-                regions.push(regobj);
-                canvas.addRegion(regobj);
+                    var regobj = regionFactory.getRegionInstance(regionrow, regioncol, cont_row, cont_col);
+                    regions.push(regobj);
+                    contobj.addRegion(regobj);
+                }
+                contobj.addNewLine();
             }
         }
     },
-    reset: function() {
-        regions.forEach(reg=>reg.reset());
+    reset: function () {
+        regions.forEach(reg => reg.reset());
 
     }
 }
