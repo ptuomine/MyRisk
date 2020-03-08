@@ -15,11 +15,11 @@ var Battle = {
             var attackingplayer = regionAttack.getPlayer();
             regionDefense.setPlayer(attackingplayer);
             regionDefense.setTroopCount(attackleft);
-            return regionAttack;
+            return true;
         } else {
             // attack failed
             regionDefense.setTroopCount(defendleft);
-            return regionDefense;
+            return false;
         }
     }
 
@@ -240,7 +240,19 @@ var GameController = {
             alert('not everything selected!');
             return;
         }
-        battle.go(attackerSelection, defenderSelection);
+        var win = battle.go(attackerSelection, defenderSelection);
+        if (win) {
+            // Defender region will become selected as attacker. Defender has to be selected next
+            attackerSelection.toggleSelection();
+            attackerSelection = defenderSelection;
+            defenderSelection = null;
+        } else {
+            // nothing selected
+            attackerSelection.toggleSelection();
+            defenderSelection.toggleSelection();
+            attackerSelection = null;
+            defenderSelection = null;
+        }
     }
 }
 

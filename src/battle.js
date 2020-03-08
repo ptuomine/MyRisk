@@ -14,11 +14,11 @@ var Battle = {
             var attackingplayer = regionAttack.getPlayer();
             regionDefense.setPlayer(attackingplayer);
             regionDefense.setTroopCount(attackleft);
-            return regionAttack;
+            return true;
         } else {
             // attack failed
             regionDefense.setTroopCount(defendleft);
-            return regionDefense;
+            return false;
         }
     }
 
