@@ -9,16 +9,24 @@ var starty = 10;
 
 var GameCanvas = {
     addRegion: function(region) {
-      
         canvas.appendChild(region.element); 
     },
     addNewLine: function() {
         canvas.appendChild(document.createElement("br"));
+    },
+    addContinent: function(continent) {
+        canvas.appendChild(continent.element);
+    },
+    addDivRow: function() {
+        var divrow = document.createElement("div");
+        divrow.classList.add("Row");
+        canvas.appendChild(divrow);
     }
+
 }
 
 module.exports = GameCanvas;
-},{"./consts.js":2,"./region.js":5}],2:[function(require,module,exports){
+},{"./consts.js":2,"./region.js":6}],2:[function(require,module,exports){
 var continent_columns = 2;
 var continent_rows = 2;
 var continent_width = 2;
@@ -41,9 +49,47 @@ exports.PLAYERS = players;
 exports.NOPLAYER = noplayer;
 exports.PLAYER_COLORS = player_colors;
 },{}],3:[function(require,module,exports){
+var consts = require('./consts.js');
+
+var Continent = function(row, col) {
+
+    var row = row;
+    var col = col;
+
+    var cont_width = consts.CONTINENT_WIDTH*consts.REGION_WIDTH;
+    var cont_height = consts.CONTINENT_HEIGHT*consts.REGION_HEIGHT;
+
+    var owner = consts.NOPLAYER;
+
+    function getContinentElement() {
+        var cont = document.createElement("div");
+        cont.id = "continent_" + row + "_" + col;
+        cont.style.height = cont_height + "px";
+        cont.style.width = cont_width + "px";
+        cont.style.border="3px solid #d3d3d3";
+        cont.style.color = "blue";
+        cont.classList.add("Column");
+ 
+        return cont;
+    }
+
+    this.element = getContinentElement();
+}
+
+var ContinentFactory = {
+
+    getContinentInstance(row, col) {
+        return new Continent(row, col);
+    }
+
+}
+
+module.exports = ContinentFactory;
+},{"./consts.js":2}],4:[function(require,module,exports){
 var canvas = require('./canvas.js');
 var consts = require('./consts.js');
-var region = require('./region.js');
+var continentFactory = require('./continent.js');
+var regionFactory = require('./region.js');
 
 var regions = [];
 
@@ -53,11 +99,19 @@ var GameBoard = {
     init: function() {
         for (row=1; row<=consts.CONTINENT_ROWS;row++) {
             var continent_row = [];
+            canvas.addDivRow();
             for (col=1; col<=consts.CONTINENT_COLUMNS;col++) {
+                buildContinent(row, col);
 
-                buildContinentRow(row, col);
+                //buildContinentRow(row, col);
             }
-            canvas.addNewLine();
+            //canvas.addNewLine();
+        }
+
+        function buildContinent(cont_row, cont_col) 
+        {
+            var contobj = continentFactory.getContinentInstance(row, col);
+            canvas.addContinent(contobj);
         }
 
         function buildContinentRow(cont_row, cont_col) {
@@ -67,7 +121,7 @@ var GameBoard = {
                 var regionrow = cont_row;
                 var regioncol = consts.CONTINENT_WIDTH*(cont_col-1)+i;
 
-                var regobj = region.getRegionInstance(regionrow, regioncol, cont_row, cont_col);
+                var regobj = regionFactory.getRegionInstance(regionrow, regioncol, cont_row, cont_col);
                 regions.push(regobj);
                 canvas.addRegion(regobj);
             }
@@ -80,7 +134,7 @@ var GameBoard = {
 }
 
 module.exports = GameBoard;
-},{"./canvas.js":1,"./consts.js":2,"./region.js":5}],4:[function(require,module,exports){
+},{"./canvas.js":1,"./consts.js":2,"./continent.js":3,"./region.js":6}],5:[function(require,module,exports){
 var canvas = require('./canvas');
 var gameboard = require('./gameboard.js');
 
@@ -90,7 +144,7 @@ window.resetGameBoard = function() {
 }
 
 gameboard.init();
-},{"./canvas":1,"./gameboard.js":3}],5:[function(require,module,exports){
+},{"./canvas":1,"./gameboard.js":4}],6:[function(require,module,exports){
 var canvas = require ('./canvas');
 var consts = require ('./consts.js');
 
@@ -146,4 +200,4 @@ var RegionFactory = {
 };
 
 module.exports = RegionFactory;
-},{"./canvas":1,"./consts.js":2}]},{},[4]);
+},{"./canvas":1,"./consts.js":2}]},{},[5]);
