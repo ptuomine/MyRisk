@@ -1,9 +1,8 @@
 var battle = require('./battle.js');
-var gameplayers = require('./gameplayers.js');
+var playerstats = require('./playerstats.js');
 
 var attackerSelection;
 var defenderSelection;
-var players = gameplayers.getAllPlayers();
 var playerInTurn;
 
 var GameController = {
@@ -12,17 +11,18 @@ var GameController = {
         this.reset();
     },
     reset: function() {
-        playerInTurn = 0;
+        playerInTurn = playerstats.getFirstPlayer();
         attackerSelection = null;
         defenderSelection = null;
     },
     nextTurn: function() {
-        playerInTurn = playerInTurn < players.length - 1 ? playerInTurn + 1 : 0;
+        playerInTurn = playerstats.nextPlayer();
+
         attackerSelection = null;
         defenderSelection = null;
     },
     getPlayerInTurn: function() {
-        return players[playerInTurn];
+        return playerInTurn;
     },
     setSelectedRegion: function(region) {
 

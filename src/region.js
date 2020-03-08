@@ -1,6 +1,7 @@
 var canvas = require('./canvas');
 var consts = require('./consts.js');
 var gamestate = require('./gamestate.js');
+var playerstats = require('./playerstats.js');
 var gamecontroller = require('./gamecontroller.js');
 
 function region(row, col, continent_row, continent_col) {
@@ -35,7 +36,7 @@ function region(row, col, continent_row, continent_col) {
             case gamestate.StartState: {
                 troopcount++;
                 element.innerText = troopcount;
-                gamestate.updateGameStats();
+                playerstats.updateStats();
 
                 break;
             }

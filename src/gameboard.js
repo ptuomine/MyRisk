@@ -44,6 +44,7 @@ var GameBoard = {
     },
     startGame: function() {
 
+        // setup the game board
         regions.forEach(region=>{
 
             var player = gamePlayers.getRandomPlayer();

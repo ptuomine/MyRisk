@@ -1,5 +1,7 @@
 var gameboard = require('./gameboard.js');
 var gameplayers = require('./gameplayers');
+var gamecontroller = require('./gamecontroller');
+var playerstats = require('./playerstats.js');
 var gamestate = require('./gamestate.js');
 
 window.resetGameBoard = function() {
@@ -19,7 +21,7 @@ window.startWar = function() {
 window.goBattle = function() {
     console.log("go battle");
     gameboard.goBattle();
-    gamestate.updateGameStats();
+    playerstats.updateStats();
 }
 
 window.endTurn = function() {
@@ -29,9 +31,11 @@ window.endTurn = function() {
 }
 
 // initialize game
-gameboard.init();
-gameplayers.init();
-gamestate.init();
+gameplayers.init(); // initialize the game players
+playerstats.init(); // initiaize the player statistics
+gamecontroller.init(); // initiize the game controller
+gamestate.init(); // initialize the game state
+gameboard.init(); // build game board
 
 gameboard.startGame();
-gamestate.updateGameStats();
+playerstats.updateStats();

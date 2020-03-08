@@ -52,7 +52,7 @@ var GameCanvas = {
 }
 
 module.exports = GameCanvas;
-},{"./consts.js":3,"./region.js":11}],3:[function(require,module,exports){
+},{"./consts.js":3,"./region.js":12}],3:[function(require,module,exports){
 var continent_columns = 2;
 var continent_rows = 2;
 var continent_width = 2;
@@ -175,6 +175,7 @@ var GameBoard = {
     },
     startGame: function() {
 
+        // setup the game board
         regions.forEach(region=>{
 
             var player = gamePlayers.getRandomPlayer();
@@ -202,13 +203,12 @@ var GameBoard = {
 }
 
 module.exports = GameBoard;
-},{"./canvas.js":2,"./consts.js":3,"./continent.js":4,"./gamecontroller.js":6,"./gameplayers.js":7,"./region.js":11}],6:[function(require,module,exports){
+},{"./canvas.js":2,"./consts.js":3,"./continent.js":4,"./gamecontroller.js":6,"./gameplayers.js":7,"./region.js":12}],6:[function(require,module,exports){
 var battle = require('./battle.js');
-var gameplayers = require('./gameplayers.js');
+var playerstats = require('./playerstats.js');
 
 var attackerSelection;
 var defenderSelection;
-var players = gameplayers.getAllPlayers();
 var playerInTurn;
 
 var GameController = {
@@ -217,17 +217,18 @@ var GameController = {
         this.reset();
     },
     reset: function() {
-        playerInTurn = 0;
+        playerInTurn = playerstats.getFirstPlayer();
         attackerSelection = null;
         defenderSelection = null;
     },
     nextTurn: function() {
-        playerInTurn = playerInTurn < players.length - 1 ? playerInTurn + 1 : 0;
+        playerInTurn = playerstats.nextPlayer();
+
         attackerSelection = null;
         defenderSelection = null;
     },
     getPlayerInTurn: function() {
-        return players[playerInTurn];
+        return playerInTurn;
     },
     setSelectedRegion: function(region) {
 
@@ -276,7 +277,7 @@ var GameController = {
 }
 
 module.exports = GameController;
-},{"./battle.js":1,"./gameplayers.js":7}],7:[function(require,module,exports){
+},{"./battle.js":1,"./playerstats.js":11}],7:[function(require,module,exports){
 var consts = require('./consts.js');
 var playerFactory = require('./player');
 
@@ -310,109 +311,17 @@ var GamePlayers = {
 
 module.exports = GamePlayers;
 },{"./consts.js":3,"./player":10}],8:[function(require,module,exports){
-var consts = require('./consts.js');
-var gameplayers = require('./gameplayers');
-var currentplayer = 0;
 
-var gamestats = [];
 var gamestate = "nostate";
-
-var playerrows = [];
-var players = gameplayers.getAllPlayers();
 
 var GameState = {
     startGame: function () {
 
     },
     init: function () {
-
         this.setGameState(this.StartState);
-
-        var table = document.getElementById("playertable");
-
-        // build the heading row
-        var tableheadings = consts.GAMESTATS_HEADINGS;
-        var headingrow = document.createElement("tr");
-        tableheadings.forEach(heading => {
-            var elem = document.createElement("th");
-            elem.innerText = heading;
-            headingrow.appendChild(elem);
-        })
-        table.appendChild(headingrow);
-
-        // build the data rows
-        players.forEach(player => {
-            var playerrow = document.createElement("tr");
-            playerrow.playerobj = player;
-            playerrows.push(playerrow);
-            table.appendChild(playerrow);
-
-            // player name
-            var namecol = document.createElement("td");
-            namecol.innerText = player.getName();
-            namecol.style.backgroundColor = player.getColor();
-            playerrow.appendChild(namecol);
-
-            // continents
-            var contcol = document.createElement("td");
-            playerrow.appendChild(contcol);
-
-            // regions
-            var regcol = document.createElement("td");
-            playerrow.appendChild(regcol);
-
-            // troops
-            var troopcol = document.createElement("td");
-            playerrow.appendChild(troopcol);
-
-            // cards
-            var cardcol = document.createElement("td");
-            playerrow.appendChild(cardcol);
-
-            // gamestats
-            gamestats.push({
-                player: player,
-                contcol: contcol,
-                regcol: regcol,
-                troopcol: troopcol,
-                cardcol: cardcol
-            })
-
-        })
-        playerrows[currentplayer].classList.add("activeplayer");
     },
     reset: function() {
-        playerrows[currentplayer].classList.remove("activeplayer");
-        currentplayer = 0;
-        playerrows[currentplayer].classList.add("activeplayer");
-
-    },
-    updateGameStats : function() {
-
-        gamestats.forEach(stat => {
-            stat.contcol.innerText = stat.player.getState().continents.length;
-            stat.regcol.innerText = stat.player.getState().regions.length;
-            stat.troopcol.innerText = stat.player.getState().getTroopCount();
-            stat.cardcol.innerText = stat.player.getState().cards;
-        })
-
-    },
-    nextPlayer: function() {
-        var nextplayer = getNextPlayer();
-        if (currentplayer == nextPlayer) {
-            // game over. currentplayer has won
-            alert("GAME OVER: " + playerrows.playerobj.getName() + " has won");
-            return false;
-        } else {
-            playerrows[currentplayer].classList.remove("activeplayer");
-            playerrows[nextplayer].classList.add("activeplayer");
-        }
-
-        function getNextPlayer(rowindex) {
-            nextplayer = rowindex < playerrows.length -1 ? rowindex + 1 : 0;
-            if (playerrows[nextPlayer].isDead()) return getNextPlayer(nextplayer);
-            return nextplayer;
-        }
     },
     setGameState: function(state) {
         gamestate = state;
@@ -425,9 +334,11 @@ var GameState = {
 }
 
 module.exports = GameState;
-},{"./consts.js":3,"./gameplayers":7}],9:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var gameboard = require('./gameboard.js');
 var gameplayers = require('./gameplayers');
+var gamecontroller = require('./gamecontroller');
+var playerstats = require('./playerstats.js');
 var gamestate = require('./gamestate.js');
 
 window.resetGameBoard = function() {
@@ -447,7 +358,7 @@ window.startWar = function() {
 window.goBattle = function() {
     console.log("go battle");
     gameboard.goBattle();
-    gamestate.updateGameStats();
+    playerstats.updateStats();
 }
 
 window.endTurn = function() {
@@ -457,14 +368,16 @@ window.endTurn = function() {
 }
 
 // initialize game
-gameboard.init();
-gameplayers.init();
-gamestate.init();
+gameplayers.init(); // initialize the game players
+playerstats.init(); // initiaize the player statistics
+gamecontroller.init(); // initiize the game controller
+gamestate.init(); // initialize the game state
+gameboard.init(); // build game board
 
 gameboard.startGame();
-gamestate.updateGameStats();
+playerstats.updateStats();
 
-},{"./gameboard.js":5,"./gameplayers":7,"./gamestate.js":8}],10:[function(require,module,exports){
+},{"./gameboard.js":5,"./gamecontroller":6,"./gameplayers":7,"./gamestate.js":8,"./playerstats.js":11}],10:[function(require,module,exports){
 var emptystate = {
     regions: [],
     continents: [],
@@ -546,9 +459,118 @@ var PlayerFactory = {
 
 module.exports = PlayerFactory;
 },{"./consts.js":3}],11:[function(require,module,exports){
+var consts = require('./consts.js');
+var gameplayers = require('./gameplayers');
+var currentplayer = 0;
+
+var gamestats = [];
+var gamestate = "nostate";
+
+var playerrows = [];
+var players = gameplayers.getAllPlayers();
+
+var PlayerStats = {
+    init: function () {
+
+        var table = document.getElementById("playertable");
+
+        // build the heading row
+        var tableheadings = consts.GAMESTATS_HEADINGS;
+        var headingrow = document.createElement("tr");
+        tableheadings.forEach(heading => {
+            var elem = document.createElement("th");
+            elem.innerText = heading;
+            headingrow.appendChild(elem);
+        })
+        table.appendChild(headingrow);
+
+        // build the data rows
+        players.forEach(player => {
+            var playerrow = document.createElement("tr");
+            playerrow.playerobj = player;
+            playerrows.push(playerrow);
+            table.appendChild(playerrow);
+
+            // player name
+            var namecol = document.createElement("td");
+            namecol.innerText = player.getName();
+            namecol.style.backgroundColor = player.getColor();
+            playerrow.appendChild(namecol);
+
+            // continents
+            var contcol = document.createElement("td");
+            playerrow.appendChild(contcol);
+
+            // regions
+            var regcol = document.createElement("td");
+            playerrow.appendChild(regcol);
+
+            // troops
+            var troopcol = document.createElement("td");
+            playerrow.appendChild(troopcol);
+
+            // cards
+            var cardcol = document.createElement("td");
+            playerrow.appendChild(cardcol);
+
+            // gamestats
+            gamestats.push({
+                player: player,
+                contcol: contcol,
+                regcol: regcol,
+                troopcol: troopcol,
+                cardcol: cardcol
+            })
+
+        })
+        playerrows[currentplayer].classList.add("activeplayer");
+    },
+    reset: function() {
+        playerrows[currentplayer].classList.remove("activeplayer");
+        currentplayer = 0;
+        playerrows[currentplayer].classList.add("activeplayer");
+
+    },
+    updateStats : function() {
+
+        gamestats.forEach(stat => {
+            stat.contcol.innerText = stat.player.getState().continents.length;
+            stat.regcol.innerText = stat.player.getState().regions.length;
+            stat.troopcol.innerText = stat.player.getState().getTroopCount();
+            stat.cardcol.innerText = stat.player.getState().cards;
+        })
+
+    },
+    nextPlayer: function() {
+        var nextplayer = getNextPlayer(currentplayer);
+        if (currentplayer == nextplayer) {
+            // game over. currentplayer has won
+            alert("GAME OVER: " + playerrows.playerobj.getName() + " has won");
+            return null;
+        } else {
+            playerrows[currentplayer].classList.remove("activeplayer");
+            playerrows[nextplayer].classList.add("activeplayer");
+            currentplayer = nextplayer;
+            return playerrows[nextplayer].playerobj;
+        }
+
+        function getNextPlayer(rowindex) {
+            nextplayer = rowindex < playerrows.length -1 ? rowindex + 1 : 0;
+            if (playerrows[nextplayer].playerobj.isDead()) return getNextPlayer(nextplayer);
+            return nextplayer;
+        }
+    },
+    getFirstPlayer: function() {
+        return playerrows[0].playerobj;
+    }
+}
+
+module.exports = PlayerStats;
+},{"./consts.js":3,"./gameplayers":7}],12:[function(require,module,exports){
 var canvas = require('./canvas');
 var consts = require('./consts.js');
 var gamestate = require('./gamestate.js');
+var playerstats = require('./playerstats.js');
 var gamecontroller = require('./gamecontroller.js');
 
 function region(row, col, continent_row, continent_col) {
@@ -583,7 +605,7 @@ function region(row, col, continent_row, continent_col) {
             case gamestate.StartState: {
                 troopcount++;
                 element.innerText = troopcount;
-                gamestate.updateGameStats();
+                playerstats.updateStats();
 
                 break;
             }
@@ -683,4 +705,4 @@ var RegionFactory = {
 };
 
 module.exports = RegionFactory;
-},{"./canvas":2,"./consts.js":3,"./gamecontroller.js":6,"./gamestate.js":8}]},{},[9]);
+},{"./canvas":2,"./consts.js":3,"./gamecontroller.js":6,"./gamestate.js":8,"./playerstats.js":11}]},{},[9]);
