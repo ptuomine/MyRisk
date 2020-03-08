@@ -50,6 +50,7 @@ var GameBoard = {
     },
     reset: function () {
         regions.forEach(reg => reg.reset());
+        gamePlayers.reset();
 
     }
 }

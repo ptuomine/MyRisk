@@ -147,6 +147,7 @@ var GameBoard = {
     },
     reset: function () {
         regions.forEach(reg => reg.reset());
+        gamePlayers.reset();
 
     }
 }
@@ -171,6 +172,9 @@ var GamePlayers = {
         var randomIndex = random;
         random = random < players.length-1 ? random  + 1: 0;
         return players[randomIndex];
+    },
+    reset: function() {
+        players.forEach(player=>player(reset));
     }
 
 }
@@ -191,10 +195,30 @@ gameboard.init();
 gameplayers.init();
 gameboard.startGame();
 },{"./canvas":1,"./gameboard.js":4,"./gameplayers":5}],7:[function(require,module,exports){
+var emptystate = {
+    regions: [],
+    continents: [],
+    troops: 0,
+    cards: 0
+};
+
 function player(id, name, color) {
     this.id = id;
     this.name = name;
     this.color = color;
+    this.state = emptystate;
+
+    this.reset = function() {
+        this.state = emptystate;
+    }
+
+    this.addRegion = function(region) {
+        regions.push(region);
+    }
+
+    this.addContinent = function(continent) {
+        continents.push(continent);
+    }
 }
 
 var consts = require('./consts.js');
