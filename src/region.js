@@ -1,6 +1,7 @@
 var canvas = require('./canvas');
 var consts = require('./consts.js');
 var gamestate = require('./gamestate.js');
+var gamecontroller = require('./gamecontroller.js');
 
 function region(row, col, continent_row, continent_col) {
     var elementid = "region_" + row + "_" + col;
@@ -12,6 +13,7 @@ function region(row, col, continent_row, continent_col) {
     var occupant = consts.NOPLAYER;
     var element = getRegionElement();
     var selected = false;
+    var self = this;
 
     function getRegionElement() {
         var reg = document.createElement("button");
@@ -25,15 +27,6 @@ function region(row, col, continent_row, continent_col) {
         return reg;
     }
 
-    function toggleSelected() {
-
-        selected = !selected;
-        if (selected) {
-            element.style.border = "2px solid black";
-        } else {
-            element.style.border = "2px solid " + occupant.getColor();
-        }
-    }
     function clickedbutton() {
         console.log("coords: " + elementid);
         console.log("row: " + continent_row + ";col: " + continent_col);
@@ -47,7 +40,8 @@ function region(row, col, continent_row, continent_col) {
                 break;
             }
             case gamestate.BattleState: {
-                toggleSelected();
+                self.toggleSelection();
+                gamecontroller.setSelectedRegion(self);
                 break;
             }
         }
@@ -57,6 +51,16 @@ function region(row, col, continent_row, continent_col) {
 
     this.init = function() {
         this.reset();
+    }
+
+    this.toggleSelection = function() {
+
+        selected = !selected;
+        if (selected) {
+            element.style.border = "2px solid black";
+        } else {
+            element.style.border = "2px solid " + occupant.getColor();
+        }
     }
 
     this.gameStateChange = function() {
@@ -72,33 +76,42 @@ function region(row, col, continent_row, continent_col) {
         }
     }
 
-    this.updateTroopCount = function (count) {
+    this.getTroopCount = function () {
+        return troopcount;
+    }
+
+    this.setTroopCount = function (count) {
         troopcount = count;
         this.element.innerText = count;
     }
 
     this.increaseTroopCount = function () {
-        this.updateTroopCount(troopcount + 1);
+        this.setTroopCount(troopcount + 1);
+    }
+
+    this.decreaseTroopCount = function (count) {
+        this.setTroopCount(troopcount - count);
     }
 
     this.reset = function () {
-        this.updateTroopCount(0);
+        this.setTroopCount(0);
         this.gameStateChange(gamestate.StartState);
     }
 
     this.setPlayer = function (player) {
         occupant = player;
         this.element.style.backgroundColor = occupant.getColor();
-        this.updateTroopCount(1);
+        this.setTroopCount(1);
     }
 
-    this.getTroopCount = function () {
-        return troopcount;
+    this.getPlayer = function() {
+        return occupant;
     }
 }
 
 var RegionFactory = {
     getRegionInstance: function (row, col, cont_row, cont_col) {
+        gamecontroller = gamecontroller;
         var instance = new region(row, col, cont_row, cont_col);
         instance.init();
         return instance;

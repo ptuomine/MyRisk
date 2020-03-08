@@ -1,4 +1,32 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+var Battle = {
+
+    go: function(regionAttack, regionDefense) {
+
+        var defendingtroops = regionDefense.getTroopCount();
+        var attackingtroops = regionAttack.getTroopCount() - 1;
+        var defendleft = defendingtroops - attackingtroops; // defending troops left after attack
+        var attackleft = Math.abs(defendleft);
+
+        regionAttack.setTroopCount(1); // Allways one left in the attacking square
+
+        if (defendleft < 0) {
+            // attack successful
+            var attackingplayer = regionAttack.getPlayer();
+            regionDefense.setPlayer(attackingplayer);
+            regionDefense.setTroopCount(attackleft);
+            return regionAttack;
+        } else {
+            // attack failed
+            regionDefense.setTroopCount(defendleft);
+            return regionDefense;
+        }
+    }
+
+}
+
+module.exports = Battle;
+},{}],2:[function(require,module,exports){
 var consts = require('./consts.js');
 var region = require('./region.js');
 
@@ -21,7 +49,7 @@ var GameCanvas = {
 }
 
 module.exports = GameCanvas;
-},{"./consts.js":2,"./region.js":9}],2:[function(require,module,exports){
+},{"./consts.js":3,"./region.js":11}],3:[function(require,module,exports){
 var continent_columns = 2;
 var continent_rows = 2;
 var continent_width = 2;
@@ -52,7 +80,7 @@ exports.PLAYER_COLORS = player_colors;
 exports.TOTAL_TROOPS_EACH = total_troops_each;
 exports.PLAYER_COUNT = player_count;
 exports.GAMESTATS_HEADINGS = gamestats;
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 var consts = require('./consts.js');
 
 var Continent = function(row, col) {
@@ -97,17 +125,20 @@ var ContinentFactory = {
 }
 
 module.exports = ContinentFactory;
-},{"./consts.js":2}],4:[function(require,module,exports){
+},{"./consts.js":3}],5:[function(require,module,exports){
 var canvas = require('./canvas.js');
 var consts = require('./consts.js');
 var continentFactory = require('./continent.js');
 var regionFactory = require('./region.js');
 var gamePlayers = require('./gameplayers.js');
+var gamecontroller = require('./gamecontroller.js');
 
 var regions = [];
 
 var GameBoard = {
     init: function () {
+
+        this.reset();
 
         // Build game board
         for (row = 1; row <= consts.CONTINENT_ROWS; row++) {
@@ -152,15 +183,69 @@ var GameBoard = {
     reset: function () {
         regions.forEach(reg => reg.reset());
         gamePlayers.reset();
+        gamecontroller.reset();
 
     },
-    startBattle: function() {
+    startWar: function() {
         regions.forEach(reg=>reg.gameStateChange());
+    },
+    goBattle: function() {
+        gamecontroller.goBattle();
     }
 }
 
 module.exports = GameBoard;
-},{"./canvas.js":1,"./consts.js":2,"./continent.js":3,"./gameplayers.js":5,"./region.js":9}],5:[function(require,module,exports){
+},{"./canvas.js":2,"./consts.js":3,"./continent.js":4,"./gamecontroller.js":6,"./gameplayers.js":7,"./region.js":11}],6:[function(require,module,exports){
+var battle = require('./battle.js');
+var gameplayers = require('./gameplayers.js');
+
+var attackerSelection;
+var defenderSelection;
+var players = gameplayers.getAllPlayers();
+var playerInTurn;
+
+function getPlayerInTurn() {
+    return players[playerInTurn];
+}
+
+var GameController = {
+
+    init: function () {
+        this.reset();
+    },
+    reset: function() {
+        playerInTurn = 0;
+        attackerSelection = null;
+        defenderSelection = null;
+    },
+    nextTurn: function() {
+        playerInTurn = playerInTurn < players.length - 1 ? playerInTurn ++ : 0;
+    },
+    setSelectedRegion: function(region) {
+        if (region.getPlayer().isSame(getPlayerInTurn())) {
+            // Set the attacker
+            if (attackerSelection) attackerSelection.toggleSelection(); // deselect if already selected
+            attackerSelection = region;
+        } else if (attackerSelection){
+            // Attacker already set. Set defender
+            if (defenderSelection) defenderSelection.toggleSelection(); // deselect if already selected
+            defenderSelection = region;
+        } else {
+            // Attacker not yet set. Cannot set defender yet.
+            region.toggleSelection();
+        }
+    },
+    goBattle: function() {
+        if (!attackerSelection || !defenderSelection) {
+            alert('not everything selected!');
+            return;
+        }
+        battle.go(attackerSelection, defenderSelection);
+    }
+}
+
+module.exports = GameController;
+},{"./battle.js":1,"./gameplayers.js":7}],7:[function(require,module,exports){
 var consts = require('./consts.js');
 var playerFactory = require('./player');
 
@@ -190,7 +275,7 @@ var GamePlayers = {
 }
 
 module.exports = GamePlayers;
-},{"./consts.js":2,"./player":8}],6:[function(require,module,exports){
+},{"./consts.js":3,"./player":10}],8:[function(require,module,exports){
 var consts = require('./consts.js');
 var gameplayers = require('./gameplayers');
 
@@ -276,7 +361,7 @@ var GameState = {
 }
 
 module.exports = GameState;
-},{"./consts.js":2,"./gameplayers":5}],7:[function(require,module,exports){
+},{"./consts.js":3,"./gameplayers":7}],9:[function(require,module,exports){
 var canvas = require('./canvas');
 var gameboard = require('./gameboard.js');
 var gameplayers = require('./gameplayers');
@@ -290,10 +375,15 @@ window.resetGameBoard = function() {
     gameboard.startGame();
 }
 
-window.startBattle = function() {
-    console.log("start game");
+window.startWar = function() {
+    console.log("start war");
     gamestate.setGameState(gamestate.BattleState);
-    gameboard.startBattle();
+    gameboard.startWar();
+}
+
+window.goBattle = function() {
+    console.log("go battle");
+    gameboard.goBattle();
 }
 
 // initialize game
@@ -304,7 +394,7 @@ gamestate.init();
 gameboard.startGame();
 gamestate.updateGameStats();
 
-},{"./canvas":1,"./gameboard.js":4,"./gameplayers":5,"./gamestate.js":6}],8:[function(require,module,exports){
+},{"./canvas":2,"./gameboard.js":5,"./gameplayers":7,"./gamestate.js":8}],10:[function(require,module,exports){
 var emptystate = {
     regions: [],
     continents: [],
@@ -352,6 +442,10 @@ function player(id, name, color) {
     this.setDraft = function(count) {
         state.draft = count;
     }
+
+    this.isSame = function(p) {
+        return p.getName() == this.getName();
+    }
 }
 
 var consts = require('./consts.js');
@@ -373,10 +467,11 @@ var PlayerFactory = {
 }
 
 module.exports = PlayerFactory;
-},{"./consts.js":2}],9:[function(require,module,exports){
+},{"./consts.js":3}],11:[function(require,module,exports){
 var canvas = require('./canvas');
 var consts = require('./consts.js');
 var gamestate = require('./gamestate.js');
+var gamecontroller = require('./gamecontroller.js');
 
 function region(row, col, continent_row, continent_col) {
     var elementid = "region_" + row + "_" + col;
@@ -388,6 +483,7 @@ function region(row, col, continent_row, continent_col) {
     var occupant = consts.NOPLAYER;
     var element = getRegionElement();
     var selected = false;
+    var self = this;
 
     function getRegionElement() {
         var reg = document.createElement("button");
@@ -401,15 +497,6 @@ function region(row, col, continent_row, continent_col) {
         return reg;
     }
 
-    function toggleSelected() {
-
-        selected = !selected;
-        if (selected) {
-            element.style.border = "2px solid black";
-        } else {
-            element.style.border = "2px solid " + occupant.getColor();
-        }
-    }
     function clickedbutton() {
         console.log("coords: " + elementid);
         console.log("row: " + continent_row + ";col: " + continent_col);
@@ -423,7 +510,8 @@ function region(row, col, continent_row, continent_col) {
                 break;
             }
             case gamestate.BattleState: {
-                toggleSelected();
+                self.toggleSelection();
+                gamecontroller.setSelectedRegion(self);
                 break;
             }
         }
@@ -433,6 +521,16 @@ function region(row, col, continent_row, continent_col) {
 
     this.init = function() {
         this.reset();
+    }
+
+    this.toggleSelection = function() {
+
+        selected = !selected;
+        if (selected) {
+            element.style.border = "2px solid black";
+        } else {
+            element.style.border = "2px solid " + occupant.getColor();
+        }
     }
 
     this.gameStateChange = function() {
@@ -448,33 +546,42 @@ function region(row, col, continent_row, continent_col) {
         }
     }
 
-    this.updateTroopCount = function (count) {
+    this.getTroopCount = function () {
+        return troopcount;
+    }
+
+    this.setTroopCount = function (count) {
         troopcount = count;
         this.element.innerText = count;
     }
 
     this.increaseTroopCount = function () {
-        this.updateTroopCount(troopcount + 1);
+        this.setTroopCount(troopcount + 1);
+    }
+
+    this.decreaseTroopCount = function (count) {
+        this.setTroopCount(troopcount - count);
     }
 
     this.reset = function () {
-        this.updateTroopCount(0);
+        this.setTroopCount(0);
         this.gameStateChange(gamestate.StartState);
     }
 
     this.setPlayer = function (player) {
         occupant = player;
         this.element.style.backgroundColor = occupant.getColor();
-        this.updateTroopCount(1);
+        this.setTroopCount(1);
     }
 
-    this.getTroopCount = function () {
-        return troopcount;
+    this.getPlayer = function() {
+        return occupant;
     }
 }
 
 var RegionFactory = {
     getRegionInstance: function (row, col, cont_row, cont_col) {
+        gamecontroller = gamecontroller;
         var instance = new region(row, col, cont_row, cont_col);
         instance.init();
         return instance;
@@ -483,4 +590,4 @@ var RegionFactory = {
 };
 
 module.exports = RegionFactory;
-},{"./canvas":1,"./consts.js":2,"./gamestate.js":6}]},{},[7]);
+},{"./canvas":2,"./consts.js":3,"./gamecontroller.js":6,"./gamestate.js":8}]},{},[9]);

@@ -11,10 +11,15 @@ window.resetGameBoard = function() {
     gameboard.startGame();
 }
 
-window.startBattle = function() {
-    console.log("start game");
+window.startWar = function() {
+    console.log("start war");
     gamestate.setGameState(gamestate.BattleState);
-    gameboard.startBattle();
+    gameboard.startWar();
+}
+
+window.goBattle = function() {
+    console.log("go battle");
+    gameboard.goBattle();
 }
 
 // initialize game

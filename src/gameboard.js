@@ -3,11 +3,14 @@ var consts = require('./consts.js');
 var continentFactory = require('./continent.js');
 var regionFactory = require('./region.js');
 var gamePlayers = require('./gameplayers.js');
+var gamecontroller = require('./gamecontroller.js');
 
 var regions = [];
 
 var GameBoard = {
     init: function () {
+
+        this.reset();
 
         // Build game board
         for (row = 1; row <= consts.CONTINENT_ROWS; row++) {
@@ -52,10 +55,14 @@ var GameBoard = {
     reset: function () {
         regions.forEach(reg => reg.reset());
         gamePlayers.reset();
+        gamecontroller.reset();
 
     },
-    startBattle: function() {
+    startWar: function() {
         regions.forEach(reg=>reg.gameStateChange());
+    },
+    goBattle: function() {
+        gamecontroller.goBattle();
     }
 }
 

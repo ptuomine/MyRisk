@@ -45,6 +45,10 @@ function player(id, name, color) {
     this.setDraft = function(count) {
         state.draft = count;
     }
+
+    this.isSame = function(p) {
+        return p.getName() == this.getName();
+    }
 }
 
 var consts = require('./consts.js');
