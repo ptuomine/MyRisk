@@ -545,7 +545,7 @@ var PlayerStats = {
         var nextplayer = getNextPlayer(currentplayer);
         if (currentplayer == nextplayer) {
             // game over. currentplayer has won
-            alert("GAME OVER: " + playerrows.playerobj.getName() + " has won");
+            alert("GAME OVER: " + playerrows[currentplayer].playerobj.getName() + " has won");
             return null;
         } else {
             playerrows[currentplayer].classList.remove("activeplayer");
