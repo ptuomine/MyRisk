@@ -18,7 +18,7 @@ var GamePlayers = {
         return players[randomIndex];
     },
     reset: function() {
-        players.forEach(player=>player(reset));
+        players.forEach(player=>player.reset());
     }
 
 }
