@@ -49,6 +49,8 @@ function region(row, col, continent_row, continent_col) {
 
     this.element = element;
 
+    this.id = elementid;
+
     this.init = function() {
         this.reset();
     }
@@ -115,6 +117,10 @@ function region(row, col, continent_row, continent_col) {
 
     this.getPlayer = function() {
         return occupant;
+    }
+
+    this.isSame = function(region) {
+        return elementid == region.id;
     }
 }
 

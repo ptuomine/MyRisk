@@ -26,6 +26,10 @@ function player(id, name, color) {
         state.troops = state.troops + region.getTroopCount();
     }
 
+    this.removeRegion = function(region) {
+        state.regions = state.regions.filter(reg=>!reg.isSame(region));
+    }
+
     this.addContinent = function(continent) {
         state.continents.push(continent);
     }

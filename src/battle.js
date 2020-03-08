@@ -12,8 +12,11 @@ var Battle = {
         if (defendleft < 0) {
             // attack successful
             var attackingplayer = regionAttack.getPlayer();
+            var defendingplayer = regionDefense.getPlayer();
             regionDefense.setPlayer(attackingplayer);
             regionDefense.setTroopCount(attackleft);
+            attackingplayer.addRegion(regionDefense);
+            defendingplayer.removeRegion(regionDefense);
             return true;
         } else {
             // attack failed

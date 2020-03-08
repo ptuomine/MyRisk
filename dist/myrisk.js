@@ -13,8 +13,11 @@ var Battle = {
         if (defendleft < 0) {
             // attack successful
             var attackingplayer = regionAttack.getPlayer();
+            var defendingplayer = regionDefense.getPlayer();
             regionDefense.setPlayer(attackingplayer);
             regionDefense.setTroopCount(attackleft);
+            attackingplayer.addRegion(regionDefense);
+            defendingplayer.removeRegion(regionDefense);
             return true;
         } else {
             // attack failed
@@ -390,7 +393,6 @@ var GameState = {
 
 module.exports = GameState;
 },{"./consts.js":3,"./gameplayers":7}],9:[function(require,module,exports){
-var canvas = require('./canvas');
 var gameboard = require('./gameboard.js');
 var gameplayers = require('./gameplayers');
 var gamestate = require('./gamestate.js');
@@ -412,6 +414,7 @@ window.startWar = function() {
 window.goBattle = function() {
     console.log("go battle");
     gameboard.goBattle();
+    gamestate.updateGameStats();
 }
 
 window.endTurn = function() {
@@ -428,7 +431,7 @@ gamestate.init();
 gameboard.startGame();
 gamestate.updateGameStats();
 
-},{"./canvas":2,"./gameboard.js":5,"./gameplayers":7,"./gamestate.js":8}],10:[function(require,module,exports){
+},{"./gameboard.js":5,"./gameplayers":7,"./gamestate.js":8}],10:[function(require,module,exports){
 var emptystate = {
     regions: [],
     continents: [],
@@ -455,6 +458,10 @@ function player(id, name, color) {
     this.addRegion = function(region) {
         state.regions.push(region);
         state.troops = state.troops + region.getTroopCount();
+    }
+
+    this.removeRegion = function(region) {
+        state.regions = state.regions.filter(reg=>!reg.isSame(region));
     }
 
     this.addContinent = function(continent) {
@@ -553,6 +560,8 @@ function region(row, col, continent_row, continent_col) {
 
     this.element = element;
 
+    this.id = elementid;
+
     this.init = function() {
         this.reset();
     }
@@ -619,6 +628,10 @@ function region(row, col, continent_row, continent_col) {
 
     this.getPlayer = function() {
         return occupant;
+    }
+
+    this.isSame = function(region) {
+        return elementid == region.id;
     }
 }
 

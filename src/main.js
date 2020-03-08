@@ -1,4 +1,3 @@
-var canvas = require('./canvas');
 var gameboard = require('./gameboard.js');
 var gameplayers = require('./gameplayers');
 var gamestate = require('./gamestate.js');
@@ -20,6 +19,7 @@ window.startWar = function() {
 window.goBattle = function() {
     console.log("go battle");
     gameboard.goBattle();
+    gamestate.updateGameStats();
 }
 
 window.endTurn = function() {
