@@ -53,6 +53,9 @@ var GameBoard = {
         regions.forEach(reg => reg.reset());
         gamePlayers.reset();
 
+    },
+    startBattle: function() {
+        regions.forEach(reg=>reg.gameStateChange());
     }
 }
 

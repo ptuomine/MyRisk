@@ -2,12 +2,15 @@ var consts = require('./consts.js');
 var gameplayers = require('./gameplayers');
 
 var gamestats = [];
+var gamestate = "nostate";
 
 var GameState = {
     startGame: function () {
 
     },
     init: function () {
+
+        this.setGameState(this.StartState);
 
         var table = document.getElementById("playertable");
         var players = gameplayers.getAllPlayers();
@@ -68,7 +71,15 @@ var GameState = {
             stat.cardcol.innerText = stat.player.getState().cards;
         })
 
-    }
+    },
+    setGameState: function(state) {
+        gamestate = state;
+    },
+    getGameState: function() {
+        return gamestate;
+    },
+    StartState: "Start",
+    BattleState: "Battle"
 }
 
 module.exports = GameState;
