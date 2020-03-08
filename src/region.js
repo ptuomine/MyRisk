@@ -53,15 +53,24 @@ function region(row, col, continent_row, continent_col) {
         this.reset();
     }
 
+    this.isSelected = function() {
+        return selected;
+    }
+
     this.toggleSelection = function() {
 
         selected = !selected;
+        this.setSelection(selected);
+    }
+
+    this.setSelection = function(selection) {
+        selected = selection;
         if (selected) {
             element.style.border = "2px solid black";
         } else {
             element.style.border = "2px solid " + occupant.getColor();
         }
-    }
+    } 
 
     this.gameStateChange = function() {
         switch (gamestate.getGameState()) {

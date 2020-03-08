@@ -1,3 +1,12 @@
+table, td, th {
+    text-align: center;
+    border: 1;
+}
+
+.activeplayer {
+    background-color: blue;
+}
+
 .Row {
     display: table;
     width: 100%; /*Optional*/
@@ -8,3 +17,4 @@
     display: table-cell;
     /*background-color: red;*/ /*Optional*/
 }
+

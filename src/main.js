@@ -22,6 +22,12 @@ window.goBattle = function() {
     gameboard.goBattle();
 }
 
+window.endTurn = function() {
+    console.log("end turn");
+    gamestate.setGameState(gamestate.StartState);
+    gameboard.nextTurn();
+}
+
 // initialize game
 gameboard.init();
 gameplayers.init();

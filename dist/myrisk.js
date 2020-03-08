@@ -191,6 +191,10 @@ var GameBoard = {
     },
     goBattle: function() {
         gamecontroller.goBattle();
+    },
+    nextTurn: function() {
+        this.startWar();
+        gamecontroller.nextTurn();
     }
 }
 
@@ -204,10 +208,6 @@ var defenderSelection;
 var players = gameplayers.getAllPlayers();
 var playerInTurn;
 
-function getPlayerInTurn() {
-    return players[playerInTurn];
-}
-
 var GameController = {
 
     init: function () {
@@ -219,20 +219,36 @@ var GameController = {
         defenderSelection = null;
     },
     nextTurn: function() {
-        playerInTurn = playerInTurn < players.length - 1 ? playerInTurn ++ : 0;
+        playerInTurn = playerInTurn < players.length - 1 ? playerInTurn + 1 : 0;
+        attackerSelection = null;
+        defenderSelection = null;
+    },
+    getPlayerInTurn: function() {
+        return players[playerInTurn];
     },
     setSelectedRegion: function(region) {
-        if (region.getPlayer().isSame(getPlayerInTurn())) {
+
+        if (!region.isSelected()) {
+            // Selected false
+            if (region.getPlayer().isSame(this.getPlayerInTurn())) {
+                attackerSelection = null;
+            } else {
+                defenderSelection = null;
+            }
+            return;
+        }
+        // Selected = true
+        if (region.getPlayer().isSame(this.getPlayerInTurn())) {
             // Set the attacker
-            if (attackerSelection) attackerSelection.toggleSelection(); // deselect if already selected
+            if (attackerSelection) attackerSelection.setSelection(false); // deselect if already selected
             attackerSelection = region;
         } else if (attackerSelection){
             // Attacker already set. Set defender
-            if (defenderSelection) defenderSelection.toggleSelection(); // deselect if already selected
+            if (defenderSelection) defenderSelection.setSelection(false); // deselect if already selected
             defenderSelection = region;
         } else {
             // Attacker not yet set. Cannot set defender yet.
-            region.toggleSelection();
+            region.setSelection(false);
         }
     },
     goBattle: function() {
@@ -243,13 +259,13 @@ var GameController = {
         var win = battle.go(attackerSelection, defenderSelection);
         if (win) {
             // Defender region will become selected as attacker. Defender has to be selected next
-            attackerSelection.toggleSelection();
+            attackerSelection.setSelection(false);
             attackerSelection = defenderSelection;
             defenderSelection = null;
         } else {
             // nothing selected
-            attackerSelection.toggleSelection();
-            defenderSelection.toggleSelection();
+            attackerSelection.setSelection(false);
+            defenderSelection.setSelection(false);
             attackerSelection = null;
             defenderSelection = null;
         }
@@ -398,6 +414,12 @@ window.goBattle = function() {
     gameboard.goBattle();
 }
 
+window.endTurn = function() {
+    console.log("end turn");
+    gamestate.setGameState(gamestate.StartState);
+    gameboard.nextTurn();
+}
+
 // initialize game
 gameboard.init();
 gameplayers.init();
@@ -535,15 +557,24 @@ function region(row, col, continent_row, continent_col) {
         this.reset();
     }
 
+    this.isSelected = function() {
+        return selected;
+    }
+
     this.toggleSelection = function() {
 
         selected = !selected;
+        this.setSelection(selected);
+    }
+
+    this.setSelection = function(selection) {
+        selected = selection;
         if (selected) {
             element.style.border = "2px solid black";
         } else {
             element.style.border = "2px solid " + occupant.getColor();
         }
-    }
+    } 
 
     this.gameStateChange = function() {
         switch (gamestate.getGameState()) {

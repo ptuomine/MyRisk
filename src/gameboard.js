@@ -63,6 +63,10 @@ var GameBoard = {
     },
     goBattle: function() {
         gamecontroller.goBattle();
+    },
+    nextTurn: function() {
+        this.startWar();
+        gamecontroller.nextTurn();
     }
 }
 
