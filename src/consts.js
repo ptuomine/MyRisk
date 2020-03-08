@@ -12,6 +12,8 @@ var player_colors = ['#00af9d','#ffb652','#cd66cc','#66bc29','#0096db','#3a7dda'
 var total_regions = continent_columns * continent_width * continent_rows * continent_height;
 var total_troops_each = total_regions * 2;
 
+var gamestats = ["player", "continents", "regions", "troops", "cards"];
+
 var exports = module.exports = {};
 
 exports.CONTINENT_COLUMNS =  continent_columns;
@@ -25,3 +27,4 @@ exports.NOPLAYER = noplayer;
 exports.PLAYER_COLORS = player_colors;
 exports.TOTAL_TROOPS_EACH = total_troops_each;
 exports.PLAYER_COUNT = player_count;
+exports.GAMESTATS_HEADINGS = gamestats;

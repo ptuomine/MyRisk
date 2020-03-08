@@ -12,6 +12,9 @@ var GamePlayers = {
             players.push(playerFactory.getPlayerInstance());
         }
     },
+    getAllPlayers: function() {
+        return players;
+    },
     getRandomPlayer: function() {
         var randomIndex = random;
         random = random < players.length-1 ? random  + 1: 0;

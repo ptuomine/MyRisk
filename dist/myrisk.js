@@ -21,7 +21,7 @@ var GameCanvas = {
 }
 
 module.exports = GameCanvas;
-},{"./consts.js":2,"./region.js":8}],2:[function(require,module,exports){
+},{"./consts.js":2,"./region.js":9}],2:[function(require,module,exports){
 var continent_columns = 2;
 var continent_rows = 2;
 var continent_width = 2;
@@ -36,6 +36,8 @@ var player_colors = ['#00af9d','#ffb652','#cd66cc','#66bc29','#0096db','#3a7dda'
 var total_regions = continent_columns * continent_width * continent_rows * continent_height;
 var total_troops_each = total_regions * 2;
 
+var gamestats = ["player", "continents", "regions", "troops", "cards"];
+
 var exports = module.exports = {};
 
 exports.CONTINENT_COLUMNS =  continent_columns;
@@ -49,6 +51,7 @@ exports.NOPLAYER = noplayer;
 exports.PLAYER_COLORS = player_colors;
 exports.TOTAL_TROOPS_EACH = total_troops_each;
 exports.PLAYER_COUNT = player_count;
+exports.GAMESTATS_HEADINGS = gamestats;
 },{}],3:[function(require,module,exports){
 var consts = require('./consts.js');
 
@@ -142,6 +145,7 @@ var GameBoard = {
 
             var player = gamePlayers.getRandomPlayer();
             region.setPlayer(player);
+            player.addRegion(region);
 
         })
     },
@@ -153,7 +157,7 @@ var GameBoard = {
 }
 
 module.exports = GameBoard;
-},{"./canvas.js":1,"./consts.js":2,"./continent.js":3,"./gameplayers.js":5,"./region.js":8}],5:[function(require,module,exports){
+},{"./canvas.js":1,"./consts.js":2,"./continent.js":3,"./gameplayers.js":5,"./region.js":9}],5:[function(require,module,exports){
 var consts = require('./consts.js');
 var playerFactory = require('./player');
 
@@ -168,6 +172,9 @@ var GamePlayers = {
             players.push(playerFactory.getPlayerInstance());
         }
     },
+    getAllPlayers: function() {
+        return players;
+    },
     getRandomPlayer: function() {
         var randomIndex = random;
         random = random < players.length-1 ? random  + 1: 0;
@@ -180,10 +187,74 @@ var GamePlayers = {
 }
 
 module.exports = GamePlayers;
-},{"./consts.js":2,"./player":7}],6:[function(require,module,exports){
+},{"./consts.js":2,"./player":8}],6:[function(require,module,exports){
+var consts = require('./consts.js');
+var gameplayers = require('./gameplayers');
+
+var GameState = {
+    startGame: function () {
+
+    },
+    createGameStats: function () {
+
+        var table = document.getElementById("playertable");
+        var players = gameplayers.getAllPlayers();
+
+        // build the heading row
+        var tableheadings = consts.GAMESTATS_HEADINGS;
+        var headingrow = document.createElement("tr");
+        tableheadings.forEach(heading => {
+            var elem = document.createElement("th");
+            elem.innerText = heading;
+            headingrow.appendChild(elem);
+        })
+        table.appendChild(headingrow);
+
+        // build the data rows
+        players.forEach(player => {
+            var playerrow = document.createElement("tr");
+            table.appendChild(playerrow);
+
+            // player name
+            var playercol = document.createElement("td");
+            playercol.innerText = player.getName();
+            playerrow.appendChild(playercol);
+
+            // continents
+            var playercol = document.createElement("td");
+            playercol.innerText = player.getState().continents.length;
+            playerrow.appendChild(playercol);
+
+            // regions
+            var playercol = document.createElement("td");
+            playercol.innerText = player.getState().regions.length;
+            playerrow.appendChild(playercol);
+
+            // troops
+            var playercol = document.createElement("td");
+            playercol.innerText = player.getState().getTroopCount();
+            playerrow.appendChild(playercol);
+
+            // cards
+            var playercol = document.createElement("td");
+            playercol.innerText = player.getState().cards;
+            playerrow.appendChild(playercol);
+
+        })
+
+
+
+        return table;
+
+    }
+}
+
+module.exports = GameState;
+},{"./consts.js":2,"./gameplayers":5}],7:[function(require,module,exports){
 var canvas = require('./canvas');
 var gameboard = require('./gameboard.js');
 var gameplayers = require('./gameplayers');
+var gamestate = require('./gamestate.js');
 
 window.resetGameBoard = function() {
     console.log("reset game board");
@@ -194,7 +265,9 @@ window.resetGameBoard = function() {
 gameboard.init();
 gameplayers.init();
 gameboard.startGame();
-},{"./canvas":1,"./gameboard.js":4,"./gameplayers":5}],7:[function(require,module,exports){
+gamestate.createGameStats();
+
+},{"./canvas":1,"./gameboard.js":4,"./gameplayers":5,"./gamestate.js":6}],8:[function(require,module,exports){
 var emptystate = {
     regions: [],
     continents: [],
@@ -203,21 +276,44 @@ var emptystate = {
 };
 
 function player(id, name, color) {
-    this.id = id;
-    this.name = name;
-    this.color = color;
-    this.state = emptystate;
+    var id = id;
+    var name = name;
+    var color = color;
+    var state = {};
 
     this.reset = function() {
-        this.state = emptystate;
+        state.regions = [];
+        state.continents = [];
+        state.getTroopCount = function() {
+            return state.regions.reduce((a,b) => a+b.getTroopCount(), 0);
+        };
+        state.cards = 0;
+        state.draft = 0;
     }
 
     this.addRegion = function(region) {
-        regions.push(region);
+        state.regions.push(region);
+        state.troops = state.troops + region.getTroopCount();
     }
 
     this.addContinent = function(continent) {
-        continents.push(continent);
+        state.continents.push(continent);
+    }
+
+    this.getName = function() {
+        return name;
+    }
+
+    this.getColor = function() {
+        return color;
+    }
+
+    this.getState = function() {
+        return state;
+    }
+
+    this.setDraft = function(count) {
+        state.draft = count;
     }
 }
 
@@ -233,13 +329,14 @@ var PlayerFactory = {
         var color = colors[playerid];
         playerid++;
         var newplayer = new player(playerid, "player"+playerid, color);
+        newplayer.reset();
         return newplayer;
 
     }
 }
 
 module.exports = PlayerFactory;
-},{"./consts.js":2}],8:[function(require,module,exports){
+},{"./consts.js":2}],9:[function(require,module,exports){
 var canvas = require ('./canvas');
 var consts = require ('./consts.js');
 
@@ -289,8 +386,12 @@ function region(row, col, continent_row, continent_col) {
 
     this.setPlayer = function(player) {
         occupant = player;
-        this.element.style.backgroundColor = occupant.color;
+        this.element.style.backgroundColor = occupant.getColor();
         this.updateTroopCount(1);
+    }
+
+    this.getTroopCount = function() {
+        return troopcount;
     }
 }
 
@@ -306,4 +407,4 @@ var RegionFactory = {
 };
 
 module.exports = RegionFactory;
-},{"./canvas":1,"./consts.js":2}]},{},[6]);
+},{"./canvas":1,"./consts.js":2}]},{},[7]);

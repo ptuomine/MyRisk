@@ -47,8 +47,12 @@ function region(row, col, continent_row, continent_col) {
 
     this.setPlayer = function(player) {
         occupant = player;
-        this.element.style.backgroundColor = occupant.color;
+        this.element.style.backgroundColor = occupant.getColor();
         this.updateTroopCount(1);
+    }
+
+    this.getTroopCount = function() {
+        return troopcount;
     }
 }
 

@@ -45,6 +45,7 @@ var GameBoard = {
 
             var player = gamePlayers.getRandomPlayer();
             region.setPlayer(player);
+            player.addRegion(region);
 
         })
     },

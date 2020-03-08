@@ -6,21 +6,44 @@ var emptystate = {
 };
 
 function player(id, name, color) {
-    this.id = id;
-    this.name = name;
-    this.color = color;
-    this.state = emptystate;
+    var id = id;
+    var name = name;
+    var color = color;
+    var state = {};
 
     this.reset = function() {
-        this.state = emptystate;
+        state.regions = [];
+        state.continents = [];
+        state.getTroopCount = function() {
+            return state.regions.reduce((a,b) => a+b.getTroopCount(), 0);
+        };
+        state.cards = 0;
+        state.draft = 0;
     }
 
     this.addRegion = function(region) {
-        regions.push(region);
+        state.regions.push(region);
+        state.troops = state.troops + region.getTroopCount();
     }
 
     this.addContinent = function(continent) {
-        continents.push(continent);
+        state.continents.push(continent);
+    }
+
+    this.getName = function() {
+        return name;
+    }
+
+    this.getColor = function() {
+        return color;
+    }
+
+    this.getState = function() {
+        return state;
+    }
+
+    this.setDraft = function(count) {
+        state.draft = count;
     }
 }
 
@@ -36,6 +59,7 @@ var PlayerFactory = {
         var color = colors[playerid];
         playerid++;
         var newplayer = new player(playerid, "player"+playerid, color);
+        newplayer.reset();
         return newplayer;
 
     }
