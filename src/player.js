@@ -53,6 +53,10 @@ function player(id, name, color) {
     this.isSame = function(p) {
         return p.getName() == this.getName();
     }
+
+    this.isDead = function() {
+        return state.regions.length == 0;
+    }
 }
 
 var consts = require('./consts.js');

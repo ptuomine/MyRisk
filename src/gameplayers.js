@@ -15,6 +15,9 @@ var GamePlayers = {
     getAllPlayers: function() {
         return players;
     },
+    getAlivePlayers: function() {
+        return players.filter(p=>!p.isDead());
+    },
     getRandomPlayer: function() {
         var randomIndex = random;
         random = random < players.length-1 ? random  + 1: 0;

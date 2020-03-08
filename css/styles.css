@@ -1,10 +1,9 @@
 table, td, th {
     text-align: center;
-    border: 1;
 }
 
 .activeplayer {
-    background-color: blue;
+    background-color: lightgray;
 }
 
 .Row {
