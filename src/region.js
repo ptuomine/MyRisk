@@ -33,11 +33,22 @@ function region(row, col, continent_row, continent_col) {
     this.element = element;
 
     this.updateTroopCount = function (count) {
+        troopcount = count;
         this.element.innerText=count;
+    }
+
+    this.increaseTroopCount = function() {
+        this.updateTroopCount(troopcount + 1);
     }
 
     this.reset = function() {
         this.updateTroopCount(0);
+    }
+
+    this.setPlayer = function(player) {
+        occupant = player;
+        this.element.style.backgroundColor = occupant.color;
+        this.updateTroopCount(1);
     }
 }
 
