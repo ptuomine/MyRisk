@@ -27,7 +27,7 @@ function region(row, col, contobj) {
         return reg;
     }
 
-    function addtroops() {
+    this.addTroops = function() {
 
         if (!occupant.reduceDraft()) return; // no troops to add, so do nothing
 
@@ -47,7 +47,7 @@ function region(row, col, contobj) {
 
         switch (gamestate.getGameState()) {
             case gamestate.StartState: {
-                addtroops();
+                self.addTroops();
                 break;
             }
             case gamestate.BattleState: {
@@ -122,7 +122,6 @@ function region(row, col, contobj) {
     this.setPlayer = function (player) {
         occupant = player;
         this.element.style.backgroundColor = occupant.getColor();
-        this.setTroopCount(1);
     }
 
     this.getPlayer = function() {
