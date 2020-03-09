@@ -22,18 +22,7 @@ var Battle = {
 
             // Check continent
             var continent = regionDefense.getContinent();
-
-            var oldOwner = continent.getOldOwner();
-            var newOwner = continent.getNewOwner();
-            if (oldOwner != consts.NOPLAYER) {
-                oldOwner.removeContinent(continent);
-            }
-            if (newOwner != consts.NOPLAYER) {
-                newOwner.addContinent(continent);
-            }
-
-
-
+            continent.checkContinentOwner();
 
             return true;
         } else {

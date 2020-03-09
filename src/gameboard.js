@@ -4,8 +4,10 @@ var continentFactory = require('./continent.js');
 var regionFactory = require('./region.js');
 var gamePlayers = require('./gameplayers.js');
 var gamecontroller = require('./gamecontroller.js');
+var util = require('./util.js');
 
 var regions = [];
+var continents = [];
 
 var GameBoard = {
     init: function () {
@@ -16,7 +18,8 @@ var GameBoard = {
         for (row = 1; row <= consts.CONTINENT_ROWS; row++) {
             canvas.addDivRow();
             for (col = 1; col <= consts.CONTINENT_COLUMNS; col++) {
-                buildContinent(row, col);
+                var continent = buildContinent(row, col);
+                continents.push(continent);
             }
         }
 
@@ -24,6 +27,7 @@ var GameBoard = {
             var contobj = continentFactory.getContinentInstance(row, col);
             buildRegions(row, col, contobj);
             canvas.addContinent(contobj);
+            return contobj;
         }
 
         function buildRegions(cont_row, cont_col, contobj) {
@@ -44,15 +48,22 @@ var GameBoard = {
     },
     startGame: function() {
 
-        // setup the game board
-        regions.forEach(region=>{
 
-            var player = gamePlayers.getRandomPlayer();
+        // setup the random game board
+        var players = gamePlayers.getAllPlayers();
+        util.shuffleArray(regions);
+        regions.forEach(function(region, index) {
+            var player = players[index%players.length]; 
             region.setPlayer(player);
             region.addTroops();
             player.addRegion(region);
+        });
 
-        })
+        if (continents.some(c=>c.checkContinentOwner() != consts.NOPLAYER)) {
+            players.forEach(p=>p.reset());
+            regions.forEach(r=>r.reset());
+            this.startGame(); // none of the continents should be owned 
+        }
     },
     reset: function () {
         regions.forEach(reg => reg.reset());

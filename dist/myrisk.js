@@ -23,18 +23,7 @@ var Battle = {
 
             // Check continent
             var continent = regionDefense.getContinent();
-
-            var oldOwner = continent.getOldOwner();
-            var newOwner = continent.getNewOwner();
-            if (oldOwner != consts.NOPLAYER) {
-                oldOwner.removeContinent(continent);
-            }
-            if (newOwner != consts.NOPLAYER) {
-                newOwner.addContinent(continent);
-            }
-
-
-
+            continent.checkContinentOwner();
 
             return true;
         } else {
@@ -104,13 +93,13 @@ exports.GAMESTATS_HEADINGS = gamestats;
 },{}],4:[function(require,module,exports){
 var consts = require('./consts.js');
 
-var Continent = function(row, col) {
+var Continent = function (row, col) {
 
     var row = row;
     var col = col;
 
-    var cont_width = consts.CONTINENT_WIDTH*consts.REGION_WIDTH;
-    var cont_height = consts.CONTINENT_HEIGHT*consts.REGION_HEIGHT;
+    var cont_width = consts.CONTINENT_WIDTH * consts.REGION_WIDTH;
+    var cont_height = consts.CONTINENT_HEIGHT * consts.REGION_HEIGHT;
 
     var owner = consts.NOPLAYER;
 
@@ -121,44 +110,21 @@ var Continent = function(row, col) {
         cont.id = "continent_" + row + "_" + col;
         cont.style.height = cont_height + "px";
         cont.style.width = cont_width + "px";
-        cont.style.border="3px solid #d3d3d3";
+        cont.style.border = "3px solid #d3d3d3";
         cont.style.color = "blue";
         cont.classList.add("Column");
- 
+
         return cont;
     }
 
-    this.element = getContinentElement();
-
-    this.getId = function() {
-        return row + "_" + col;
-    }
-
-    this.addRegion = function(region) {
-        this.element.appendChild(region.element);
-        regions.push(region);
-    }
-
-    this.addNewLine = function() {
-        this.element.appendChild(document.createElement("br"));
-    }
-
-    this.getColumn = function() {
-        return col;
-    }
-
-    this.getRow = function() {
-        return row;
-    }
-
-    this.getOldOwner = function() {
+    function getOldOwner() {
 
         return owner;
     }
 
-    this.getNewOwner = function() {
+    function getNewOwner() {
 
-        if (regions.every(r=>r.getPlayer() == regions[0].getPlayer())) {
+        if (regions.every(r => r.getPlayer() == regions[0].getPlayer())) {
             // if all regions have the same occupant then return that one
             owner = regions[0].getPlayer();
             return owner
@@ -166,8 +132,47 @@ var Continent = function(row, col) {
         return consts.NOPLAYER;;
     }
 
-    this.getContinentPoints = function() {
+    this.element = getContinentElement();
+
+    this.getId = function () {
+        return row + "_" + col;
+    }
+
+    this.addRegion = function (region) {
+        this.element.appendChild(region.element);
+        regions.push(region);
+    }
+
+    this.addNewLine = function () {
+        this.element.appendChild(document.createElement("br"));
+    }
+
+    this.getColumn = function () {
+        return col;
+    }
+
+    this.getRow = function () {
+        return row;
+    }
+
+    this.getContinentPoints = function () {
         return regions.length / 2;
+    }
+
+    this.checkContinentOwner = function () {
+
+        var oldOwner = getOldOwner();
+        var newOwner = getNewOwner();
+        if (oldOwner != consts.NOPLAYER) {
+            oldOwner.removeContinent(this);
+        }
+        if (newOwner != consts.NOPLAYER) {
+            newOwner.addContinent(this);
+        }
+
+        owner = newOwner;
+
+        return owner;
     }
 }
 
@@ -187,8 +192,10 @@ var continentFactory = require('./continent.js');
 var regionFactory = require('./region.js');
 var gamePlayers = require('./gameplayers.js');
 var gamecontroller = require('./gamecontroller.js');
+var util = require('./util.js');
 
 var regions = [];
+var continents = [];
 
 var GameBoard = {
     init: function () {
@@ -199,7 +206,8 @@ var GameBoard = {
         for (row = 1; row <= consts.CONTINENT_ROWS; row++) {
             canvas.addDivRow();
             for (col = 1; col <= consts.CONTINENT_COLUMNS; col++) {
-                buildContinent(row, col);
+                var continent = buildContinent(row, col);
+                continents.push(continent);
             }
         }
 
@@ -207,6 +215,7 @@ var GameBoard = {
             var contobj = continentFactory.getContinentInstance(row, col);
             buildRegions(row, col, contobj);
             canvas.addContinent(contobj);
+            return contobj;
         }
 
         function buildRegions(cont_row, cont_col, contobj) {
@@ -227,15 +236,22 @@ var GameBoard = {
     },
     startGame: function() {
 
-        // setup the game board
-        regions.forEach(region=>{
 
-            var player = gamePlayers.getRandomPlayer();
+        // setup the random game board
+        var players = gamePlayers.getAllPlayers();
+        util.shuffleArray(regions);
+        regions.forEach(function(region, index) {
+            var player = players[index%players.length]; 
             region.setPlayer(player);
             region.addTroops();
             player.addRegion(region);
+        });
 
-        })
+        if (continents.some(c=>c.checkContinentOwner() != consts.NOPLAYER)) {
+            players.forEach(p=>p.reset());
+            regions.forEach(r=>r.reset());
+            this.startGame(); // none of the continents should be owned 
+        }
     },
     reset: function () {
         regions.forEach(reg => reg.reset());
@@ -256,7 +272,7 @@ var GameBoard = {
 }
 
 module.exports = GameBoard;
-},{"./canvas.js":2,"./consts.js":3,"./continent.js":4,"./gamecontroller.js":6,"./gameplayers.js":7,"./region.js":12}],6:[function(require,module,exports){
+},{"./canvas.js":2,"./consts.js":3,"./continent.js":4,"./gamecontroller.js":6,"./gameplayers.js":7,"./region.js":12,"./util.js":13}],6:[function(require,module,exports){
 var battle = require('./battle.js');
 var playerstats = require('./playerstats.js');
 
@@ -826,4 +842,15 @@ var RegionFactory = {
 };
 
 module.exports = RegionFactory;
-},{"./canvas":2,"./consts.js":3,"./gamecontroller.js":6,"./gamestate.js":8,"./playerstats.js":11}]},{},[9]);
+},{"./canvas":2,"./consts.js":3,"./gamecontroller.js":6,"./gamestate.js":8,"./playerstats.js":11}],13:[function(require,module,exports){
+var Util = {
+    shuffleArray: function(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+}
+
+module.exports = Util;
+},{}]},{},[9]);
