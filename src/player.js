@@ -1,3 +1,5 @@
+var consts = require('./consts.js');
+
 function player(id, name, color) {
     var id = id;
     var name = name;
@@ -11,7 +13,7 @@ function player(id, name, color) {
             return state.regions.reduce((a,b) => a+b.getTroopCount(), 0);
         };
         state.cards = 0;
-        state.draft = 0;
+        state.draft = consts.TOTAL_TROOPS_EACH;
     }
 
     this.addRegion = function(region) {
@@ -56,7 +58,11 @@ function player(id, name, color) {
     }
 
     this.reduceDraft = function() {
+        
+        if (state.draft == 0) return false; // cannot reduce
         state.draft--;
+        return true;
+
     }
 
     this.startTurn = function() {
@@ -64,7 +70,7 @@ function player(id, name, color) {
         // Set the draft count
         var regionpoints = state.regions.length < 3 ? state.regions.length / 3 : 3;
         var continentpoints = state.continents.reduce((a,b) => a + b.getContinentPoints(), 0);
-        state.draft = regionpoints + continentpoints;
+        state.draft += regionpoints + continentpoints;
     }
 }
 

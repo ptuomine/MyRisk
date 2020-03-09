@@ -10,7 +10,7 @@ function region(row, col, contobj) {
     var col = col;
     var continent = contobj;
     var troopcount = 0;
-    var occupant = consts.NOPLAYER;
+    var occupant = null;
     var element = getRegionElement();
     var selected = false;
     var self = this;
@@ -27,21 +27,31 @@ function region(row, col, contobj) {
         return reg;
     }
 
+    function addtroops() {
+
+        if (!occupant.reduceDraft()) return; // no troops to add, so do nothing
+
+        troopcount++;
+        element.innerText = troopcount;
+        playerstats.updateStats();
+    }
+
+    function selectregion() {
+        self.toggleSelection();
+        gamecontroller.setSelectedRegion(self);
+    }
+
     function clickedbutton() {
         console.log("coords: " + elementid);
         console.log("row: " + continent.getRow() + ";col: " + continent.getColumn());
 
         switch (gamestate.getGameState()) {
             case gamestate.StartState: {
-                troopcount++;
-                element.innerText = troopcount;
-                playerstats.updateStats();
-
+                addtroops();
                 break;
             }
             case gamestate.BattleState: {
-                self.toggleSelection();
-                gamecontroller.setSelectedRegion(self);
+                selectregion();
                 break;
             }
         }

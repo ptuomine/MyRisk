@@ -83,7 +83,7 @@ var player_count = 3;
 var player_colors = ['#00af9d','#ffb652','#cd66cc','#66bc29','#0096db','#3a7dda','#ffe100'];
 
 var total_regions = continent_columns * continent_width * continent_rows * continent_height;
-var total_troops_each = total_regions * 2;
+var total_troops_each = total_regions * 1.25;
 
 var gamestats = ["player", "continents", "regions", "troops", "drafts", "cards"];
 
@@ -435,6 +435,8 @@ playerstats.reset();
 playerstats.updateStats();
 
 },{"./gameboard.js":5,"./gamecontroller":6,"./gameplayers":7,"./gamestate.js":8,"./playerstats.js":11}],10:[function(require,module,exports){
+var consts = require('./consts.js');
+
 function player(id, name, color) {
     var id = id;
     var name = name;
@@ -448,7 +450,7 @@ function player(id, name, color) {
             return state.regions.reduce((a,b) => a+b.getTroopCount(), 0);
         };
         state.cards = 0;
-        state.draft = 0;
+        state.draft = consts.TOTAL_TROOPS_EACH;
     }
 
     this.addRegion = function(region) {
@@ -493,7 +495,11 @@ function player(id, name, color) {
     }
 
     this.reduceDraft = function() {
+        
+        if (state.draft == 0) return false; // cannot reduce
         state.draft--;
+        return true;
+
     }
 
     this.startTurn = function() {
@@ -501,7 +507,7 @@ function player(id, name, color) {
         // Set the draft count
         var regionpoints = state.regions.length < 3 ? state.regions.length / 3 : 3;
         var continentpoints = state.continents.reduce((a,b) => a + b.getContinentPoints(), 0);
-        state.draft = regionpoints + continentpoints;
+        state.draft += regionpoints + continentpoints;
     }
 }
 
@@ -650,7 +656,7 @@ function region(row, col, contobj) {
     var col = col;
     var continent = contobj;
     var troopcount = 0;
-    var occupant = consts.NOPLAYER;
+    var occupant = null;
     var element = getRegionElement();
     var selected = false;
     var self = this;
@@ -667,21 +673,31 @@ function region(row, col, contobj) {
         return reg;
     }
 
+    function addtroops() {
+
+        if (!occupant.reduceDraft()) return; // no troops to add, so do nothing
+
+        troopcount++;
+        element.innerText = troopcount;
+        playerstats.updateStats();
+    }
+
+    function selectregion() {
+        self.toggleSelection();
+        gamecontroller.setSelectedRegion(self);
+    }
+
     function clickedbutton() {
         console.log("coords: " + elementid);
         console.log("row: " + continent.getRow() + ";col: " + continent.getColumn());
 
         switch (gamestate.getGameState()) {
             case gamestate.StartState: {
-                troopcount++;
-                element.innerText = troopcount;
-                playerstats.updateStats();
-
+                addtroops();
                 break;
             }
             case gamestate.BattleState: {
-                self.toggleSelection();
-                gamecontroller.setSelectedRegion(self);
+                selectregion();
                 break;
             }
         }
