@@ -16,7 +16,8 @@ var GameController = {
         defenderSelection = null;
     },
     nextTurn: function() {
-        playerInTurn = playerstats.nextPlayer();
+        playerInTurn = playerstats.nextPlayer(); // change the player in turn
+        playerInTurn.startTurn();
 
         attackerSelection = null;
         defenderSelection = null;

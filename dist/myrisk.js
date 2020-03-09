@@ -85,7 +85,7 @@ var player_colors = ['#00af9d','#ffb652','#cd66cc','#66bc29','#0096db','#3a7dda'
 var total_regions = continent_columns * continent_width * continent_rows * continent_height;
 var total_troops_each = total_regions * 2;
 
-var gamestats = ["player", "continents", "regions", "troops", "cards"];
+var gamestats = ["player", "continents", "regions", "troops", "drafts", "cards"];
 
 var exports = module.exports = {};
 
@@ -164,6 +164,10 @@ var Continent = function(row, col) {
             return owner
         }
         return consts.NOPLAYER;;
+    }
+
+    this.getContinentPoints = function() {
+        return regions.length / 2;
     }
 }
 
@@ -270,7 +274,8 @@ var GameController = {
         defenderSelection = null;
     },
     nextTurn: function() {
-        playerInTurn = playerstats.nextPlayer();
+        playerInTurn = playerstats.nextPlayer(); // change the player in turn
+        playerInTurn.startTurn();
 
         attackerSelection = null;
         defenderSelection = null;
@@ -395,6 +400,8 @@ window.resetGameBoard = function() {
     gamestate.setGameState(gamestate.StartState);
     gameboard.reset();
     gameboard.startGame();
+    playerstats.reset();
+    playerstats.updateStats();
 }
 
 window.startWar = function() {
@@ -413,6 +420,7 @@ window.endTurn = function() {
     console.log("end turn");
     gamestate.setGameState(gamestate.StartState);
     gameboard.nextTurn();
+    playerstats.updateStats();
 }
 
 // initialize game
@@ -423,16 +431,10 @@ gamestate.init(); // initialize the game state
 gameboard.init(); // build game board
 
 gameboard.startGame();
+playerstats.reset();
 playerstats.updateStats();
 
 },{"./gameboard.js":5,"./gamecontroller":6,"./gameplayers":7,"./gamestate.js":8,"./playerstats.js":11}],10:[function(require,module,exports){
-var emptystate = {
-    regions: [],
-    continents: [],
-    troops: 0,
-    cards: 0
-};
-
 function player(id, name, color) {
     var id = id;
     var name = name;
@@ -489,6 +491,18 @@ function player(id, name, color) {
     this.isDead = function() {
         return state.regions.length == 0;
     }
+
+    this.reduceDraft = function() {
+        state.draft--;
+    }
+
+    this.startTurn = function() {
+
+        // Set the draft count
+        var regionpoints = state.regions.length < 3 ? state.regions.length / 3 : 3;
+        var continentpoints = state.continents.reduce((a,b) => a + b.getContinentPoints(), 0);
+        state.draft = regionpoints + continentpoints;
+    }
 }
 
 var consts = require('./consts.js');
@@ -516,7 +530,6 @@ var gameplayers = require('./gameplayers');
 var currentplayer = 0;
 
 var gamestats = [];
-var gamestate = "nostate";
 
 var playerrows = [];
 var players = gameplayers.getAllPlayers();
@@ -561,6 +574,10 @@ var PlayerStats = {
             var troopcol = document.createElement("td");
             playerrow.appendChild(troopcol);
 
+            // drafts
+            var draftcol = document.createElement("td");
+            playerrow.appendChild(draftcol);
+
             // cards
             var cardcol = document.createElement("td");
             playerrow.appendChild(cardcol);
@@ -571,29 +588,31 @@ var PlayerStats = {
                 contcol: contcol,
                 regcol: regcol,
                 troopcol: troopcol,
+                draftcol: draftcol,
                 cardcol: cardcol
             })
 
         })
-        playerrows[currentplayer].classList.add("activeplayer");
     },
-    reset: function() {
+    reset: function () {
         playerrows[currentplayer].classList.remove("activeplayer");
         currentplayer = 0;
         playerrows[currentplayer].classList.add("activeplayer");
+        playerrows[currentplayer].playerobj.startTurn();
 
     },
-    updateStats : function() {
+    updateStats: function () {
 
         gamestats.forEach(stat => {
             stat.contcol.innerText = stat.player.getState().continents.length;
             stat.regcol.innerText = stat.player.getState().regions.length;
             stat.troopcol.innerText = stat.player.getState().getTroopCount();
+            stat.draftcol.innerText = stat.player.getState().draft;
             stat.cardcol.innerText = stat.player.getState().cards;
         })
 
     },
-    nextPlayer: function() {
+    nextPlayer: function () {
         var nextplayer = getNextPlayer(currentplayer);
         if (currentplayer == nextplayer) {
             // game over. currentplayer has won
@@ -607,12 +626,12 @@ var PlayerStats = {
         }
 
         function getNextPlayer(rowindex) {
-            nextplayer = rowindex < playerrows.length -1 ? rowindex + 1 : 0;
+            nextplayer = rowindex < playerrows.length - 1 ? rowindex + 1 : 0;
             if (playerrows[nextplayer].playerobj.isDead()) return getNextPlayer(nextplayer);
             return nextplayer;
         }
     },
-    getFirstPlayer: function() {
+    getFirstPlayer: function () {
         return playerrows[0].playerobj;
     }
 }

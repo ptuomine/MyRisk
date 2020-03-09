@@ -10,6 +10,8 @@ window.resetGameBoard = function() {
     gamestate.setGameState(gamestate.StartState);
     gameboard.reset();
     gameboard.startGame();
+    playerstats.reset();
+    playerstats.updateStats();
 }
 
 window.startWar = function() {
@@ -28,6 +30,7 @@ window.endTurn = function() {
     console.log("end turn");
     gamestate.setGameState(gamestate.StartState);
     gameboard.nextTurn();
+    playerstats.updateStats();
 }
 
 // initialize game
@@ -38,4 +41,5 @@ gamestate.init(); // initialize the game state
 gameboard.init(); // build game board
 
 gameboard.startGame();
+playerstats.reset();
 playerstats.updateStats();

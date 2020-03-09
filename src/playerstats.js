@@ -3,7 +3,6 @@ var gameplayers = require('./gameplayers');
 var currentplayer = 0;
 
 var gamestats = [];
-var gamestate = "nostate";
 
 var playerrows = [];
 var players = gameplayers.getAllPlayers();
@@ -48,6 +47,10 @@ var PlayerStats = {
             var troopcol = document.createElement("td");
             playerrow.appendChild(troopcol);
 
+            // drafts
+            var draftcol = document.createElement("td");
+            playerrow.appendChild(draftcol);
+
             // cards
             var cardcol = document.createElement("td");
             playerrow.appendChild(cardcol);
@@ -58,29 +61,31 @@ var PlayerStats = {
                 contcol: contcol,
                 regcol: regcol,
                 troopcol: troopcol,
+                draftcol: draftcol,
                 cardcol: cardcol
             })
 
         })
-        playerrows[currentplayer].classList.add("activeplayer");
     },
-    reset: function() {
+    reset: function () {
         playerrows[currentplayer].classList.remove("activeplayer");
         currentplayer = 0;
         playerrows[currentplayer].classList.add("activeplayer");
+        playerrows[currentplayer].playerobj.startTurn();
 
     },
-    updateStats : function() {
+    updateStats: function () {
 
         gamestats.forEach(stat => {
             stat.contcol.innerText = stat.player.getState().continents.length;
             stat.regcol.innerText = stat.player.getState().regions.length;
             stat.troopcol.innerText = stat.player.getState().getTroopCount();
+            stat.draftcol.innerText = stat.player.getState().draft;
             stat.cardcol.innerText = stat.player.getState().cards;
         })
 
     },
-    nextPlayer: function() {
+    nextPlayer: function () {
         var nextplayer = getNextPlayer(currentplayer);
         if (currentplayer == nextplayer) {
             // game over. currentplayer has won
@@ -94,12 +99,12 @@ var PlayerStats = {
         }
 
         function getNextPlayer(rowindex) {
-            nextplayer = rowindex < playerrows.length -1 ? rowindex + 1 : 0;
+            nextplayer = rowindex < playerrows.length - 1 ? rowindex + 1 : 0;
             if (playerrows[nextplayer].playerobj.isDead()) return getNextPlayer(nextplayer);
             return nextplayer;
         }
     },
-    getFirstPlayer: function() {
+    getFirstPlayer: function () {
         return playerrows[0].playerobj;
     }
 }

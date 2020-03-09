@@ -1,10 +1,3 @@
-var emptystate = {
-    regions: [],
-    continents: [],
-    troops: 0,
-    cards: 0
-};
-
 function player(id, name, color) {
     var id = id;
     var name = name;
@@ -60,6 +53,18 @@ function player(id, name, color) {
 
     this.isDead = function() {
         return state.regions.length == 0;
+    }
+
+    this.reduceDraft = function() {
+        state.draft--;
+    }
+
+    this.startTurn = function() {
+
+        // Set the draft count
+        var regionpoints = state.regions.length < 3 ? state.regions.length / 3 : 3;
+        var continentpoints = state.continents.reduce((a,b) => a + b.getContinentPoints(), 0);
+        state.draft = regionpoints + continentpoints;
     }
 }
 

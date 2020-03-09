@@ -61,6 +61,10 @@ var Continent = function(row, col) {
         }
         return consts.NOPLAYER;;
     }
+
+    this.getContinentPoints = function() {
+        return regions.length / 2;
+    }
 }
 
 var ContinentFactory = {
