@@ -28,7 +28,7 @@ var GameController = {
     setSelectedRegion: function(region) {
 
         if (!region.isSelected()) {
-            // Selected false
+            // Selected false, i.e. deselection
             if (region.getPlayer().isSame(this.getPlayerInTurn())) {
                 attackerSelection = null;
             } else {
@@ -43,6 +43,11 @@ var GameController = {
             attackerSelection = region;
         } else if (attackerSelection){
             // Attacker already set. Set defender
+            if (!attackerSelection.canAttack(region)) {
+                // selection not legal
+                region.setSelection(false); 
+                return;
+            }
             if (defenderSelection) defenderSelection.setSelection(false); // deselect if already selected
             defenderSelection = region;
         } else {

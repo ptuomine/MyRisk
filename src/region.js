@@ -135,6 +135,26 @@ function region(row, col, contobj) {
     this.getContinent = function() {
         return continent;
     }
+
+    this.getRow = function() {
+        return row;
+    }
+
+    this.getColumn = function() {
+        return col;
+    }
+
+    this.canAttack = function(region) {
+
+        var attackX = this.getRow();
+        var attackY = this.getColumn();
+        var defendX = region.getRow();
+        var defendY = region.getColumn();
+        
+        var can = defendX <= attackX + 1 && defendX >= attackX - 1;
+        can = can && defendY <= attackY + 1 && defendY >= attackY - 1;
+        return can;
+    }
 }
 
 var RegionFactory = {

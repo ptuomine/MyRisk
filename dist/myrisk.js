@@ -287,7 +287,7 @@ var GameController = {
     setSelectedRegion: function(region) {
 
         if (!region.isSelected()) {
-            // Selected false
+            // Selected false, i.e. deselection
             if (region.getPlayer().isSame(this.getPlayerInTurn())) {
                 attackerSelection = null;
             } else {
@@ -302,6 +302,11 @@ var GameController = {
             attackerSelection = region;
         } else if (attackerSelection){
             // Attacker already set. Set defender
+            if (!attackerSelection.canAttack(region)) {
+                // selection not legal
+                region.setSelection(false); 
+                return;
+            }
             if (defenderSelection) defenderSelection.setSelection(false); // deselect if already selected
             defenderSelection = region;
         } else {
@@ -351,6 +356,12 @@ var GamePlayers = {
     },
     getAlivePlayers: function() {
         return players.filter(p=>!p.isDead());
+    },
+    getRandomPlayer2: function() {
+
+        var randomIndex = Math.floor(Math.random() * players.length);;
+        random = random < players.length-1 ? random  + 1: 0;
+        return players[randomIndex];
     },
     getRandomPlayer: function() {
         var randomIndex = random;
@@ -781,6 +792,26 @@ function region(row, col, contobj) {
 
     this.getContinent = function() {
         return continent;
+    }
+
+    this.getRow = function() {
+        return row;
+    }
+
+    this.getColumn = function() {
+        return col;
+    }
+
+    this.canAttack = function(region) {
+
+        var attackX = this.getRow();
+        var attackY = this.getColumn();
+        var defendX = region.getRow();
+        var defendY = region.getColumn();
+        
+        var can = defendX <= attackX + 1 && defendX >= attackX - 1;
+        can = can && defendY <= attackY + 1 && defendY >= attackY - 1;
+        return can;
     }
 }
 
