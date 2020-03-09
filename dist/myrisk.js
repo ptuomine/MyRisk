@@ -238,6 +238,8 @@ var GameBoard = {
 
 
         // setup the random game board
+
+        // First assign one troop to each region
         var players = gamePlayers.getAllPlayers();
         util.shuffleArray(regions);
         regions.forEach(function(region, index) {
@@ -248,10 +250,16 @@ var GameBoard = {
         });
 
         if (continents.some(c=>c.checkContinentOwner() != consts.NOPLAYER)) {
+            // none of the continents should be owned in the beginning
             players.forEach(p=>p.reset());
             regions.forEach(r=>r.reset());
-            this.startGame(); // none of the continents should be owned 
+            this.startGame(); 
         }
+
+        // Second assign rest of the player troops to its regions
+        players.forEach(p=>p.AssignTroopsToRegions());
+
+
     },
     reset: function () {
         regions.forEach(reg => reg.reset());
@@ -537,6 +545,14 @@ function player(id, name, color) {
         var continentpoints = state.continents.reduce((a,b) => a + b.getContinentPoints(), 0);
         state.draft += regionpoints + continentpoints;
     }
+
+    this.AssignTroopsToRegions = function() {
+
+        do {
+            var randomregionindex = Math.floor(Math.random() * state.regions.length);
+            var success = state.regions[randomregionindex].addTroops();
+        } while (success);
+    }
 }
 
 var consts = require('./consts.js');
@@ -703,11 +719,12 @@ function region(row, col, contobj) {
 
     this.addTroops = function() {
 
-        if (!occupant.reduceDraft()) return; // no troops to add, so do nothing
+        if (!occupant.reduceDraft()) return false; // no troops to reduce, so do nothing
 
         troopcount++;
         element.innerText = troopcount;
         playerstats.updateStats();
+        return true;
     }
 
     function selectregion() {

@@ -29,11 +29,12 @@ function region(row, col, contobj) {
 
     this.addTroops = function() {
 
-        if (!occupant.reduceDraft()) return; // no troops to add, so do nothing
+        if (!occupant.reduceDraft()) return false; // no troops to reduce, so do nothing
 
         troopcount++;
         element.innerText = troopcount;
         playerstats.updateStats();
+        return true;
     }
 
     function selectregion() {

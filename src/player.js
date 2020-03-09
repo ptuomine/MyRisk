@@ -72,6 +72,14 @@ function player(id, name, color) {
         var continentpoints = state.continents.reduce((a,b) => a + b.getContinentPoints(), 0);
         state.draft += regionpoints + continentpoints;
     }
+
+    this.AssignTroopsToRegions = function() {
+
+        do {
+            var randomregionindex = Math.floor(Math.random() * state.regions.length);
+            var success = state.regions[randomregionindex].addTroops();
+        } while (success);
+    }
 }
 
 var consts = require('./consts.js');
