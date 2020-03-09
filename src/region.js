@@ -4,12 +4,11 @@ var gamestate = require('./gamestate.js');
 var playerstats = require('./playerstats.js');
 var gamecontroller = require('./gamecontroller.js');
 
-function region(row, col, continent_row, continent_col) {
+function region(row, col, contobj) {
     var elementid = "region_" + row + "_" + col;
     var row = row;
     var col = col;
-    var continent_row = continent_row;
-    var continent_col = continent_col;
+    var continent = contobj;
     var troopcount = 0;
     var occupant = consts.NOPLAYER;
     var element = getRegionElement();
@@ -30,7 +29,7 @@ function region(row, col, continent_row, continent_col) {
 
     function clickedbutton() {
         console.log("coords: " + elementid);
-        console.log("row: " + continent_row + ";col: " + continent_col);
+        console.log("row: " + continent.getRow() + ";col: " + continent.getColumn());
 
         switch (gamestate.getGameState()) {
             case gamestate.StartState: {
@@ -123,12 +122,16 @@ function region(row, col, continent_row, continent_col) {
     this.isSame = function(region) {
         return elementid == region.id;
     }
+
+    this.getContinent = function() {
+        return continent;
+    }
 }
 
 var RegionFactory = {
-    getRegionInstance: function (row, col, cont_row, cont_col) {
+    getRegionInstance: function (row, col, contobj) {
         gamecontroller = gamecontroller;
-        var instance = new region(row, col, cont_row, cont_col);
+        var instance = new region(row, col, contobj);
         instance.init();
         return instance;
     }

@@ -34,7 +34,7 @@ var GameBoard = {
                     var regionrow = consts.CONTINENT_HEIGHT * (cont_row - 1) + i;
                     var regioncol = consts.CONTINENT_WIDTH * (cont_col - 1) + j;
 
-                    var regobj = regionFactory.getRegionInstance(regionrow, regioncol, cont_row, cont_col);
+                    var regobj = regionFactory.getRegionInstance(regionrow, regioncol, contobj);
                     regions.push(regobj);
                     contobj.addRegion(regobj);
                 }

@@ -1,3 +1,5 @@
+var consts = require('./consts');
+
 var Battle = {
 
     go: function(regionAttack, regionDefense) {
@@ -17,6 +19,22 @@ var Battle = {
             regionDefense.setTroopCount(attackleft);
             attackingplayer.addRegion(regionDefense);
             defendingplayer.removeRegion(regionDefense);
+
+            // Check continent
+            var continent = regionDefense.getContinent();
+
+            var oldOwner = continent.getOldOwner();
+            var newOwner = continent.getNewOwner();
+            if (oldOwner != consts.NOPLAYER) {
+                oldOwner.removeContinent(continent);
+            }
+            if (newOwner != consts.NOPLAYER) {
+                newOwner.addContinent(continent);
+            }
+
+
+
+
             return true;
         } else {
             // attack failed

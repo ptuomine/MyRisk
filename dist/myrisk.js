@@ -1,4 +1,6 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+var consts = require('./consts');
+
 var Battle = {
 
     go: function(regionAttack, regionDefense) {
@@ -18,6 +20,22 @@ var Battle = {
             regionDefense.setTroopCount(attackleft);
             attackingplayer.addRegion(regionDefense);
             defendingplayer.removeRegion(regionDefense);
+
+            // Check continent
+            var continent = regionDefense.getContinent();
+
+            var oldOwner = continent.getOldOwner();
+            var newOwner = continent.getNewOwner();
+            if (oldOwner != consts.NOPLAYER) {
+                oldOwner.removeContinent(continent);
+            }
+            if (newOwner != consts.NOPLAYER) {
+                newOwner.addContinent(continent);
+            }
+
+
+
+
             return true;
         } else {
             // attack failed
@@ -29,7 +47,7 @@ var Battle = {
 }
 
 module.exports = Battle;
-},{}],2:[function(require,module,exports){
+},{"./consts":3}],2:[function(require,module,exports){
 var consts = require('./consts.js');
 var region = require('./region.js');
 
@@ -96,6 +114,8 @@ var Continent = function(row, col) {
 
     var owner = consts.NOPLAYER;
 
+    var regions = [];
+
     function getContinentElement() {
         var cont = document.createElement("div");
         cont.id = "continent_" + row + "_" + col;
@@ -110,12 +130,40 @@ var Continent = function(row, col) {
 
     this.element = getContinentElement();
 
+    this.getId = function() {
+        return row + "_" + col;
+    }
+
     this.addRegion = function(region) {
-        this.element.appendChild(region.element); 
+        this.element.appendChild(region.element);
+        regions.push(region);
     }
 
     this.addNewLine = function() {
         this.element.appendChild(document.createElement("br"));
+    }
+
+    this.getColumn = function() {
+        return col;
+    }
+
+    this.getRow = function() {
+        return row;
+    }
+
+    this.getOldOwner = function() {
+
+        return owner;
+    }
+
+    this.getNewOwner = function() {
+
+        if (regions.every(r=>r.getPlayer() == regions[0].getPlayer())) {
+            // if all regions have the same occupant then return that one
+            owner = regions[0].getPlayer();
+            return owner
+        }
+        return consts.NOPLAYER;;
     }
 }
 
@@ -165,7 +213,7 @@ var GameBoard = {
                     var regionrow = consts.CONTINENT_HEIGHT * (cont_row - 1) + i;
                     var regioncol = consts.CONTINENT_WIDTH * (cont_col - 1) + j;
 
-                    var regobj = regionFactory.getRegionInstance(regionrow, regioncol, cont_row, cont_col);
+                    var regobj = regionFactory.getRegionInstance(regionrow, regioncol, contobj);
                     regions.push(regobj);
                     contobj.addRegion(regobj);
                 }
@@ -414,6 +462,10 @@ function player(id, name, color) {
         state.continents.push(continent);
     }
 
+    this.removeContinent = function(continent) {
+        state.continents = state.continents.filter(c=>continent.getId() != c.getId());
+    }
+
     this.getName = function() {
         return name;
     }
@@ -573,12 +625,11 @@ var gamestate = require('./gamestate.js');
 var playerstats = require('./playerstats.js');
 var gamecontroller = require('./gamecontroller.js');
 
-function region(row, col, continent_row, continent_col) {
+function region(row, col, contobj) {
     var elementid = "region_" + row + "_" + col;
     var row = row;
     var col = col;
-    var continent_row = continent_row;
-    var continent_col = continent_col;
+    var continent = contobj;
     var troopcount = 0;
     var occupant = consts.NOPLAYER;
     var element = getRegionElement();
@@ -599,7 +650,7 @@ function region(row, col, continent_row, continent_col) {
 
     function clickedbutton() {
         console.log("coords: " + elementid);
-        console.log("row: " + continent_row + ";col: " + continent_col);
+        console.log("row: " + continent.getRow() + ";col: " + continent.getColumn());
 
         switch (gamestate.getGameState()) {
             case gamestate.StartState: {
@@ -692,12 +743,16 @@ function region(row, col, continent_row, continent_col) {
     this.isSame = function(region) {
         return elementid == region.id;
     }
+
+    this.getContinent = function() {
+        return continent;
+    }
 }
 
 var RegionFactory = {
-    getRegionInstance: function (row, col, cont_row, cont_col) {
+    getRegionInstance: function (row, col, contobj) {
         gamecontroller = gamecontroller;
-        var instance = new region(row, col, cont_row, cont_col);
+        var instance = new region(row, col, contobj);
         instance.init();
         return instance;
     }

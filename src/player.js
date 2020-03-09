@@ -34,6 +34,10 @@ function player(id, name, color) {
         state.continents.push(continent);
     }
 
+    this.removeContinent = function(continent) {
+        state.continents = state.continents.filter(c=>continent.getId() != c.getId());
+    }
+
     this.getName = function() {
         return name;
     }
