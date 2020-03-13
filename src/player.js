@@ -1,10 +1,12 @@
 var consts = require('./consts.js');
+var deck = require('./carddeck.js');
 
 function player(id, name, color) {
     var id = id;
     var name = name;
     var color = color;
     var state = {};
+    var cardEarned = false;
 
     this.reset = function() {
         state.regions = [];
@@ -12,8 +14,9 @@ function player(id, name, color) {
         state.getTroopCount = function() {
             return state.regions.reduce((a,b) => a+b.getTroopCount(), 0);
         };
-        state.cards = 0;
+        state.cards = [];
         state.draft = consts.TOTAL_TROOPS_EACH;
+        cardEarned = false;
     }
 
     this.addRegion = function(region) {
@@ -65,6 +68,15 @@ function player(id, name, color) {
 
     }
 
+    this.endTurn = function() {
+        if (cardEarned) {
+            var card = deck.getCard();
+            state.cards.push(card);
+        }
+
+        cardEarned = false;
+    }
+
     this.startTurn = function() {
 
         // Set the draft count
@@ -79,6 +91,10 @@ function player(id, name, color) {
             var randomregionindex = Math.floor(Math.random() * state.regions.length);
             var success = state.regions[randomregionindex].addTroops();
         } while (success);
+    }
+
+    this.cardEarned = function() {
+        cardEarned = true;
     }
 }
 

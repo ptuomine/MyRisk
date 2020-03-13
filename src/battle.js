@@ -19,6 +19,7 @@ var Battle = {
             regionDefense.setTroopCount(attackleft);
             attackingplayer.addRegion(regionDefense);
             defendingplayer.removeRegion(regionDefense);
+            attackingplayer.cardEarned();
 
             // Check continent
             var continent = regionDefense.getContinent();

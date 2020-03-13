@@ -3,15 +3,17 @@ var gameplayers = require('./gameplayers');
 var gamecontroller = require('./gamecontroller');
 var playerstats = require('./playerstats.js');
 var gamestate = require('./gamestate.js');
+var deck = require('./carddeck.js');
 
 window.resetGameBoard = function() {
-    console.log("reset game board");
+    console.log("reset game2 board");
 
     gamestate.setGameState(gamestate.StartState);
     gameboard.reset();
     gameboard.startGame();
     playerstats.reset();
     playerstats.updateStats();
+    deck.init();
 }
 
 window.startWar = function() {
@@ -39,6 +41,7 @@ playerstats.init(); // initiaize the player statistics
 gamecontroller.init(); // initiize the game controller
 gamestate.init(); // initialize the game state
 gameboard.init(); // build game board
+deck.init();
 
 gameboard.startGame();
 playerstats.reset();

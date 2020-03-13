@@ -81,7 +81,7 @@ var PlayerStats = {
             stat.regcol.innerText = stat.player.getState().regions.length;
             stat.troopcol.innerText = stat.player.getState().getTroopCount();
             stat.draftcol.innerText = stat.player.getState().draft;
-            stat.cardcol.innerText = stat.player.getState().cards;
+            stat.cardcol.innerText = stat.player.getState().cards.map(c=>c.display).join();
         })
 
     },

@@ -20,6 +20,7 @@ var Battle = {
             regionDefense.setTroopCount(attackleft);
             attackingplayer.addRegion(regionDefense);
             defendingplayer.removeRegion(regionDefense);
+            attackingplayer.cardEarned();
 
             // Check continent
             var continent = regionDefense.getContinent();
@@ -36,7 +37,7 @@ var Battle = {
 }
 
 module.exports = Battle;
-},{"./consts":3}],2:[function(require,module,exports){
+},{"./consts":4}],2:[function(require,module,exports){
 var consts = require('./consts.js');
 var region = require('./region.js');
 
@@ -59,7 +60,71 @@ var GameCanvas = {
 }
 
 module.exports = GameCanvas;
-},{"./consts.js":3,"./region.js":12}],3:[function(require,module,exports){
+},{"./consts.js":4,"./region.js":13}],3:[function(require,module,exports){
+var util = require('./util.js');
+
+var cards = [];
+
+var infantry = {
+    id: 1,
+    points: 2,
+    display: "#"
+}
+
+var cavalry = {
+    id: 2,
+    points: 3,
+    display: "£"
+}
+
+var artillery = {
+    id: 3,
+    points: 3,
+    display: "¤"
+}
+
+var wildcard = {
+    id: 4,
+    points: 0,
+    display: "%"
+}
+
+var infantryCount = 10;
+var cavalryCount = 10;
+var artilleryCount = 10;
+var wildcardCount = 2;
+
+var CardDeck = {
+
+    init: function() {
+
+        cards = [];
+
+        for (i=0; i<=infantryCount; i++) {
+            cards.push(infantry);
+        }
+        for (i=0; i<=cavalryCount; i++) {
+            cards.push(cavalry);
+        }
+        for (i=0; i<=artilleryCount; i++) {
+            cards.push(artillery);
+        }
+        for (i=0; i<=wildcardCount; i++) {
+            cards.push(wildcard);
+        }
+        util.shuffleArray(cards);
+
+    },
+    getCard: function() {
+
+        if (cards.length == 0) this.init();
+        return cards.pop();
+    }
+
+}
+
+module.exports = CardDeck;
+},{"./util.js":14}],4:[function(require,module,exports){
 var continent_columns = 2;
 var continent_rows = 2;
 var continent_width = 2;
@@ -90,7 +155,7 @@ exports.PLAYER_COLORS = player_colors;
 exports.TOTAL_TROOPS_EACH = total_troops_each;
 exports.PLAYER_COUNT = player_count;
 exports.GAMESTATS_HEADINGS = gamestats;
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var consts = require('./consts.js');
 
 var Continent = function (row, col) {
@@ -185,7 +250,7 @@ var ContinentFactory = {
 }
 
 module.exports = ContinentFactory;
-},{"./consts.js":3}],5:[function(require,module,exports){
+},{"./consts.js":4}],6:[function(require,module,exports){
 var canvas = require('./canvas.js');
 var consts = require('./consts.js');
 var continentFactory = require('./continent.js');
@@ -280,7 +345,7 @@ var GameBoard = {
 }
 
 module.exports = GameBoard;
-},{"./canvas.js":2,"./consts.js":3,"./continent.js":4,"./gamecontroller.js":6,"./gameplayers.js":7,"./region.js":12,"./util.js":13}],6:[function(require,module,exports){
+},{"./canvas.js":2,"./consts.js":4,"./continent.js":5,"./gamecontroller.js":7,"./gameplayers.js":8,"./region.js":13,"./util.js":14}],7:[function(require,module,exports){
 var battle = require('./battle.js');
 var playerstats = require('./playerstats.js');
 
@@ -299,6 +364,7 @@ var GameController = {
         defenderSelection = null;
     },
     nextTurn: function() {
+        playerInTurn.endTurn();
         playerInTurn = playerstats.nextPlayer(); // change the player in turn
         playerInTurn.startTurn();
 
@@ -360,7 +426,7 @@ var GameController = {
 }
 
 module.exports = GameController;
-},{"./battle.js":1,"./playerstats.js":11}],7:[function(require,module,exports){
+},{"./battle.js":1,"./playerstats.js":12}],8:[function(require,module,exports){
 var consts = require('./consts.js');
 var playerFactory = require('./player');
 
@@ -399,7 +465,7 @@ var GamePlayers = {
 }
 
 module.exports = GamePlayers;
-},{"./consts.js":3,"./player":10}],8:[function(require,module,exports){
+},{"./consts.js":4,"./player":11}],9:[function(require,module,exports){
 
 var gamestate = "nostate";
 
@@ -423,21 +489,23 @@ var GameState = {
 }
 
 module.exports = GameState;
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var gameboard = require('./gameboard.js');
 var gameplayers = require('./gameplayers');
 var gamecontroller = require('./gamecontroller');
 var playerstats = require('./playerstats.js');
 var gamestate = require('./gamestate.js');
+var deck = require('./carddeck.js');
 
 window.resetGameBoard = function() {
-    console.log("reset game board");
+    console.log("reset game2 board");
 
     gamestate.setGameState(gamestate.StartState);
     gameboard.reset();
     gameboard.startGame();
     playerstats.reset();
     playerstats.updateStats();
+    deck.init();
 }
 
 window.startWar = function() {
@@ -465,19 +533,22 @@ playerstats.init(); // initiaize the player statistics
 gamecontroller.init(); // initiize the game controller
 gamestate.init(); // initialize the game state
 gameboard.init(); // build game board
+deck.init();
 
 gameboard.startGame();
 playerstats.reset();
 playerstats.updateStats();
 
-},{"./gameboard.js":5,"./gamecontroller":6,"./gameplayers":7,"./gamestate.js":8,"./playerstats.js":11}],10:[function(require,module,exports){
+},{"./carddeck.js":3,"./gameboard.js":6,"./gamecontroller":7,"./gameplayers":8,"./gamestate.js":9,"./playerstats.js":12}],11:[function(require,module,exports){
 var consts = require('./consts.js');
+var deck = require('./carddeck.js');
 
 function player(id, name, color) {
     var id = id;
     var name = name;
     var color = color;
     var state = {};
+    var cardEarned = false;
 
     this.reset = function() {
         state.regions = [];
@@ -485,8 +556,9 @@ function player(id, name, color) {
         state.getTroopCount = function() {
             return state.regions.reduce((a,b) => a+b.getTroopCount(), 0);
         };
-        state.cards = 0;
+        state.cards = [];
         state.draft = consts.TOTAL_TROOPS_EACH;
+        cardEarned = false;
     }
 
     this.addRegion = function(region) {
@@ -538,6 +610,15 @@ function player(id, name, color) {
 
     }
 
+    this.endTurn = function() {
+        if (cardEarned) {
+            var card = deck.getCard();
+            state.cards.push(card);
+        }
+
+        cardEarned = false;
+    }
+
     this.startTurn = function() {
 
         // Set the draft count
@@ -552,6 +633,10 @@ function player(id, name, color) {
             var randomregionindex = Math.floor(Math.random() * state.regions.length);
             var success = state.regions[randomregionindex].addTroops();
         } while (success);
+    }
+
+    this.cardEarned = function() {
+        cardEarned = true;
     }
 }
 
@@ -574,7 +659,7 @@ var PlayerFactory = {
 }
 
 module.exports = PlayerFactory;
-},{"./consts.js":3}],11:[function(require,module,exports){
+},{"./carddeck.js":3,"./consts.js":4}],12:[function(require,module,exports){
 var consts = require('./consts.js');
 var gameplayers = require('./gameplayers');
 var currentplayer = 0;
@@ -658,7 +743,7 @@ var PlayerStats = {
             stat.regcol.innerText = stat.player.getState().regions.length;
             stat.troopcol.innerText = stat.player.getState().getTroopCount();
             stat.draftcol.innerText = stat.player.getState().draft;
-            stat.cardcol.innerText = stat.player.getState().cards;
+            stat.cardcol.innerText = stat.player.getState().cards.map(c=>c.display).join();
         })
 
     },
@@ -687,7 +772,7 @@ var PlayerStats = {
 }
 
 module.exports = PlayerStats;
-},{"./consts.js":3,"./gameplayers":7}],12:[function(require,module,exports){
+},{"./consts.js":4,"./gameplayers":8}],13:[function(require,module,exports){
 var canvas = require('./canvas');
 var consts = require('./consts.js');
 var gamestate = require('./gamestate.js');
@@ -859,7 +944,7 @@ var RegionFactory = {
 };
 
 module.exports = RegionFactory;
-},{"./canvas":2,"./consts.js":3,"./gamecontroller.js":6,"./gamestate.js":8,"./playerstats.js":11}],13:[function(require,module,exports){
+},{"./canvas":2,"./consts.js":4,"./gamecontroller.js":7,"./gamestate.js":9,"./playerstats.js":12}],14:[function(require,module,exports){
 var Util = {
     shuffleArray: function(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -870,4 +955,4 @@ var Util = {
 }
 
 module.exports = Util;
-},{}]},{},[9]);
+},{}]},{},[10]);
