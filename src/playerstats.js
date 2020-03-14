@@ -106,6 +106,9 @@ var PlayerStats = {
     },
     getFirstPlayer: function () {
         return playerrows[0].playerobj;
+    },
+    sellCards: function() {
+        playerrows[currentplayer].playerobj.sellCards();
     }
 }
 

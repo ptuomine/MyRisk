@@ -35,6 +35,12 @@ window.endTurn = function() {
     playerstats.updateStats();
 }
 
+window.sellCards = function() {
+    this.console.log("sell cards");
+    playerstats.sellCards();
+    playerstats.updateStats();
+}
+
 // initialize game
 gameplayers.init(); // initialize the game players
 playerstats.init(); // initiaize the player statistics

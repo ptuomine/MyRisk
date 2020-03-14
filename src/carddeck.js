@@ -33,6 +33,12 @@ var wildcardCount = 2;
 
 var CardDeck = {
 
+    // infantryPoints: 2,
+    // cavarlryPoints: 3,
+    // artilleryPoints: 4,
+
+    // wildCardId: 4,
+
     init: function() {
 
         cards = [];

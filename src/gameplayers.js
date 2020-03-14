@@ -1,5 +1,5 @@
 var consts = require('./consts.js');
-var playerFactory = require('./player');
+var playerFactory = require('./player.js');
 
 var players = [];
 
