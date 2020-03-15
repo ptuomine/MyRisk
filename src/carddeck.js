@@ -26,6 +26,8 @@ var wildcard = {
     display: "%"
 }
 
+var allthree = [artillery, cavalry, infantry]
+
 var infantryCount = 10;
 var cavalryCount = 10;
 var artilleryCount = 10;
@@ -33,11 +35,19 @@ var wildcardCount = 2;
 
 var CardDeck = {
 
-    // infantryPoints: 2,
-    // cavarlryPoints: 3,
-    // artilleryPoints: 4,
+    infantryPoints: 2,
+    cavarlryPoints: 3,
+    artilleryPoints: 4,
 
-    // wildCardId: 4,
+    wildCardId: 4,
+
+    WildCard: wildcard,
+
+    AllTreeCards: allthree,
+
+    Infantry: infantry,
+    Cavalry: cavalry,
+    Artillery: artillery,
 
     init: function() {
 

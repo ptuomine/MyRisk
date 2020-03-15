@@ -89,6 +89,8 @@ var wildcard = {
     display: "%"
 }
 
+var allthree = [artillery, cavalry, infantry]
+
 var infantryCount = 10;
 var cavalryCount = 10;
 var artilleryCount = 10;
@@ -96,11 +98,19 @@ var wildcardCount = 2;
 
 var CardDeck = {
 
-    // infantryPoints: 2,
-    // cavarlryPoints: 3,
-    // artilleryPoints: 4,
+    infantryPoints: 2,
+    cavarlryPoints: 3,
+    artilleryPoints: 4,
 
-    // wildCardId: 4,
+    wildCardId: 4,
+
+    WildCard: wildcard,
+
+    AllTreeCards: allthree,
+
+    Infantry: infantry,
+    Cavalry: cavalry,
+    Artillery: artillery,
 
     init: function() {
 
@@ -626,8 +636,6 @@ function player(id, name, color) {
         if (cardEarned) {
             var card = deck.getCard();
             state.cards.push(card);
-            state.cards.push(card);
-            state.cards.push(card);
         }
 
         cardEarned = false;
@@ -660,21 +668,28 @@ function player(id, name, color) {
         // number of wild cards
         var wilds = state.cards.filter(c => c.id == 4).length;
 
-        var points = [4, 3, 2];
+        var allthree = deck.AllTreeCards;
 
-        // Get wildcard permutations
         var permutations = [];
-        for (i = 0; i < wilds; i++) {
-            for (j = i; j < points.length; j++) {
-                var permutation = points[i] + "" + points[j];
-                permutations.push(permutation);
+        var permutatedCards = [];
+
+        if (wilds == 1) {
+            permutatedCards = allthree;
+
+        } else if (wilds == 2) {
+            // Get permutations for two wild cards
+            for (i = 0; i < allthree.length; i++) {
+                for (j = i; j < allthree.length; j++) {
+                    var permutation = [allthree[i], allthree[j]];
+                    permutations.push(permutation);
+                }
             }
         }
 
         // Get all cards that are not wild cards
-        var nonwildspoints = state.cards.filter(c => c.id != 4).map(c => c.points);
+        var nonwildcards = state.cards.filter(c => c.id != 4);
         // add the non wild cards to the permutations
-        var permutatedCards = permutations.map(p => nonwildspoints.concat(p).sort((a, b) => {
+        permutatedCards = permutations.map(p => nonwildcards.concat(p).sort((a, b) => {
             return a.points - b.points;
         }));
 
@@ -684,11 +699,11 @@ function player(id, name, color) {
         })];
 
         // Go through all possible sets of cards
-        permutatedCards.forEach(p => {
+        permutatedCards.some(p => {
             var set = p.slice(0, 3);
             if (checkcards(set)) {
                 // sell the cards
-                var points = set.reduce((a, b) => a + b.points,0);
+                var points = set.reduce((a, b) => a + b.points, 0);
                 state.draft += points;
                 set.forEach(s => {
                     // find the card with the same amount of points
@@ -702,14 +717,15 @@ function player(id, name, color) {
                         });
                     }
                     state.cards.splice(index, 1); // remove the card from the found index
-                })
+                });
+                return true;
             }
-            return;
+            return false;
         });
 
         function checkcards(setoftree) {
             // all different
-            if (setoftree.every(c => c.id !== setoftree[0].id)) return true;
+            if (setoftree.slice(1,setoftree.length).every(c => c.id !== setoftree[0].id)) return true;
             // all same
             if (setoftree.every(c => c.id === setoftree[0].id)) return true;
 
