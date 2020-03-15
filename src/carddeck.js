@@ -39,8 +39,6 @@ var CardDeck = {
     cavarlryPoints: 3,
     artilleryPoints: 4,
 
-    wildCardId: 4,
-
     WildCard: wildcard,
 
     AllTreeCards: allthree,
@@ -72,6 +70,9 @@ var CardDeck = {
 
         if (cards.length == 0) this.init();
         return cards.pop();
+    },
+    isWildCard: function(card) {
+        return card.id == wildcard.id;
     }
 
 }

@@ -1,5 +1,6 @@
-var consts = require('./consts.js');
-var deck = require('./carddeck.js');
+var consts = require('./consts');
+var deck = require('./carddeck');
+var util = require('./util');
 
 function player(id, name, color) {
     var id = id;
@@ -110,7 +111,7 @@ function player(id, name, color) {
         var permutatedCards = [];
 
         if (wilds == 1) {
-            permutatedCards = allthree;
+            permutations = allthree;
 
         } else if (wilds == 2) {
             // Get permutations for two wild cards
@@ -126,18 +127,18 @@ function player(id, name, color) {
         var nonwildcards = state.cards.filter(c => c.id != 4);
         // add the non wild cards to the permutations
         permutatedCards = permutations.map(p => nonwildcards.concat(p).sort((a, b) => {
-            return a.points - b.points;
+            return b.points - a.points;
         }));
 
         // If there are no wild card permutations then use just the one, but sorted
         if (!permutatedCards.length) permutatedCards = [state.cards.sort((a, b) => {
-            return a.points - b.points;
+            return b.points - a.points;
         })];
 
         // Go through all possible sets of cards
         permutatedCards.some(p => {
-            var set = p.slice(0, 3);
-            if (checkcards(set)) {
+            var set = checkcards(p);
+            if (set.length > 0) {
                 // sell the cards
                 var points = set.reduce((a, b) => a + b.points, 0);
                 state.draft += points;
@@ -149,7 +150,7 @@ function player(id, name, color) {
                     if (index == -1) {
                         // find a wild card instead
                         index = state.cards.findIndex(function (c) {
-                            return c.id == deck.WildCardId;
+                            return deck.isWildCard(c);
                         });
                     }
                     state.cards.splice(index, 1); // remove the card from the found index
@@ -159,13 +160,20 @@ function player(id, name, color) {
             return false;
         });
 
-        function checkcards(setoftree) {
-            // all different
-            if (setoftree.slice(1,setoftree.length).every(c => c.id !== setoftree[0].id)) return true;
-            // all same
-            if (setoftree.every(c => c.id === setoftree[0].id)) return true;
+        function checkcards(permutation) {
 
-            return false;
+            var setofthree = permutation.slice(0, 3);
+
+            // all different
+            if (util.isAllUnique(setofthree.map(s=>s.id))) return setofthree;
+            // all same
+            if (setofthree.every(c => c.id === setofthree[0].id)) return setofthree;
+            // check next three (if exists)
+            if (permutation.length > 3) {
+                var set = checkcards(permutation.slice(1,permutation.length));
+                return set;
+            }
+            return []; // no valid set found
         }
     }
 }

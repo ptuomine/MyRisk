@@ -26,12 +26,12 @@ function testSellCards(cards, newPoints) {
     
     var state = p.getState();
 
-    expect(state.cards.length).toBe(3);
+    expect(state.cards.length).toBe(cards.length);
     expect(state.draft).toBe(consts.TOTAL_TROOPS_EACH);
 
     p.sellCards();
 
-    expect(state.cards.length).toBe(0);
+    expect(state.cards.length).toBe(cards.length - 3);
     expect(state.draft).toBe(consts.TOTAL_TROOPS_EACH + newPoints);
 }
 
@@ -77,5 +77,55 @@ describe("player tests", function () {
 
         var cards = [deck.Infantry, deck.Cavalry, deck.Artillery];
         var points = deck.infantryPoints + deck.cavarlryPoints + deck.artilleryPoints;
+        testSellCards(cards, points);
+    });
+
+    it("sellCards - three different cards with wild card", function () {
+
+        var cards = [deck.Infantry, deck.Cavalry, deck.WildCard];
+        var points = deck.infantryPoints + deck.cavarlryPoints + deck.artilleryPoints;
+        testSellCards(cards, points);
+    });
+
+    it("sellCards - three same cards with wild card", function () {
+
+        var cards = [deck.Infantry, deck.Infantry, deck.WildCard];
+        var points = deck.infantryPoints*3;
+        testSellCards(cards, points);
+    });
+
+    it("sellCards - four cards with 3 same cards", function () {
+
+        var cards = [deck.Infantry, deck.Infantry, deck.Infantry, deck.Cavalry];
+        var points = deck.infantryPoints*3;
+        testSellCards(cards, points);
+    });
+
+    it("sellCards - five cards with 3 same cards", function () {
+
+        var cards = [deck.Infantry, deck.Infantry, deck.Infantry, deck.Cavalry, deck.Cavalry];
+        var points = deck.infantryPoints*3;
+        testSellCards(cards, points);
+    });
+
+    it("sellCards - five cards with 3 same cards (in different order)", function () {
+
+        var cards = [deck.Cavalry, deck.Cavalry, deck.Infantry, deck.Infantry, deck.Infantry];
+        var points = deck.infantryPoints*3;
+        testSellCards(cards, points);
+    });
+
+    it("sellCards - five cards with 3 same cards and 3 different cards", function () {
+
+        var cards = [deck.Cavalry, deck.Cavalry, deck.WildCard, deck.Infantry, deck.Infantry];
+        var points = deck.cavarlryPoints*3;
+        testSellCards(cards, points);
+    });
+
+    it("sellCards - five cards with 3 same cards and 3 different cards (in different order)", function () {
+
+        var cards = [deck.Infantry, deck.Infantry, deck.WildCard, deck.Cavalry, deck.Cavalry];
+        var points = deck.cavarlryPoints*3;
+        testSellCards(cards, points);
     });
 });

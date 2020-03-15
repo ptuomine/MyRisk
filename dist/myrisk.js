@@ -102,8 +102,6 @@ var CardDeck = {
     cavarlryPoints: 3,
     artilleryPoints: 4,
 
-    wildCardId: 4,
-
     WildCard: wildcard,
 
     AllTreeCards: allthree,
@@ -135,6 +133,9 @@ var CardDeck = {
 
         if (cards.length == 0) this.init();
         return cards.pop();
+    },
+    isWildCard: function(card) {
+        return card.id == wildcard.id;
     }
 
 }
@@ -562,8 +563,9 @@ playerstats.reset();
 playerstats.updateStats();
 
 },{"./carddeck.js":3,"./gameboard.js":6,"./gamecontroller":7,"./gameplayers":8,"./gamestate.js":9,"./playerstats.js":12}],11:[function(require,module,exports){
-var consts = require('./consts.js');
-var deck = require('./carddeck.js');
+var consts = require('./consts');
+var deck = require('./carddeck');
+var util = require('./util');
 
 function player(id, name, color) {
     var id = id;
@@ -674,7 +676,7 @@ function player(id, name, color) {
         var permutatedCards = [];
 
         if (wilds == 1) {
-            permutatedCards = allthree;
+            permutations = allthree;
 
         } else if (wilds == 2) {
             // Get permutations for two wild cards
@@ -690,18 +692,18 @@ function player(id, name, color) {
         var nonwildcards = state.cards.filter(c => c.id != 4);
         // add the non wild cards to the permutations
         permutatedCards = permutations.map(p => nonwildcards.concat(p).sort((a, b) => {
-            return a.points - b.points;
+            return b.points - a.points;
         }));
 
         // If there are no wild card permutations then use just the one, but sorted
         if (!permutatedCards.length) permutatedCards = [state.cards.sort((a, b) => {
-            return a.points - b.points;
+            return b.points - a.points;
         })];
 
         // Go through all possible sets of cards
         permutatedCards.some(p => {
-            var set = p.slice(0, 3);
-            if (checkcards(set)) {
+            var set = checkcards(p);
+            if (set.length > 0) {
                 // sell the cards
                 var points = set.reduce((a, b) => a + b.points, 0);
                 state.draft += points;
@@ -713,7 +715,7 @@ function player(id, name, color) {
                     if (index == -1) {
                         // find a wild card instead
                         index = state.cards.findIndex(function (c) {
-                            return c.id == deck.WildCardId;
+                            return deck.isWildCard(c);
                         });
                     }
                     state.cards.splice(index, 1); // remove the card from the found index
@@ -723,13 +725,20 @@ function player(id, name, color) {
             return false;
         });
 
-        function checkcards(setoftree) {
-            // all different
-            if (setoftree.slice(1,setoftree.length).every(c => c.id !== setoftree[0].id)) return true;
-            // all same
-            if (setoftree.every(c => c.id === setoftree[0].id)) return true;
+        function checkcards(permutation) {
 
-            return false;
+            var setofthree = permutation.slice(0, 3);
+
+            // all different
+            if (util.isAllUnique(setofthree.map(s=>s.id))) return setofthree;
+            // all same
+            if (setofthree.every(c => c.id === setofthree[0].id)) return setofthree;
+            // check next three (if exists)
+            if (permutation.length > 3) {
+                var set = checkcards(permutation.slice(1,permutation.length));
+                return set;
+            }
+            return []; // no valid set found
         }
     }
 }
@@ -752,7 +761,7 @@ var PlayerFactory = {
 }
 
 module.exports = PlayerFactory;
-},{"./carddeck.js":3,"./consts.js":4}],12:[function(require,module,exports){
+},{"./carddeck":3,"./consts":4,"./util":14}],12:[function(require,module,exports){
 var consts = require('./consts.js');
 var gameplayers = require('./gameplayers');
 var currentplayer = 0;
@@ -1047,6 +1056,14 @@ var Util = {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
         }
+    },
+    isAllUnique: function(array) {
+        for (let i=0; i < array.length - 1;i++) {
+            for (let j=i+1; j < array.length;j++) {
+                if (array[i] == array[j]) return false;
+            }
+        }
+        return true;
     }
 }
 
