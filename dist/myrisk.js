@@ -79,7 +79,7 @@ var cavalry = {
 
 var artillery = {
     id: 3,
-    points: 3,
+    points: 4,
     display: "¤"
 }
 
