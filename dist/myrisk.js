@@ -38,13 +38,13 @@ var Battle = {
 
 module.exports = Battle;
 },{"./consts":4}],2:[function(require,module,exports){
-var consts = require('./consts.js');
-var region = require('./region.js');
-
 var continentsArea = document.getElementById('continentsArea'); 
 
-var startx = 10;
-var starty = 10;
+var newgameel = document.getElementById("newgame");
+var startwarel = document.getElementById("startwar");
+var gobattleel = document.getElementById("gobattle");
+var endturnel = document.getElementById("endturn");
+var sellcardsel = document.getElementById("sellcards");
 
 var GameCanvas = {
 
@@ -55,12 +55,30 @@ var GameCanvas = {
         var divrow = document.createElement("div");
         divrow.classList.add("Row");
         continentsArea.appendChild(divrow);
+    },
+    reset: function() {
+        startwarel.disabled = true;
+        endturnel.disabled = true;
+        gobattleel.disabled = true;
+        sellcardsel.disabled = true;
+    },
+    enablewar: function(enable) {
+        startwarel.disabled = !enable;
+    },
+    enablebattle: function(enable) {
+        gobattleel.disabled = !enable;
+    },
+    enableendturn: function(enable) {
+        endturnel.disabled = !enable;
+    },
+    enablesellcards: function(enable) {
+        sellcardsel.disabled = !enable;
     }
 
 }
 
 module.exports = GameCanvas;
-},{"./consts.js":4,"./region.js":13}],3:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 var util = require('./util.js');
 
 var cards = [];
@@ -344,6 +362,7 @@ var GameBoard = {
 
     },
     reset: function () {
+        canvas.reset();
         regions.forEach(reg => reg.reset());
         gamePlayers.reset();
         gamecontroller.reset();
@@ -365,10 +384,15 @@ module.exports = GameBoard;
 },{"./canvas.js":2,"./consts.js":4,"./continent.js":5,"./gamecontroller.js":7,"./gameplayers.js":8,"./region.js":13,"./util.js":14}],7:[function(require,module,exports){
 var battle = require('./battle.js');
 var playerstats = require('./playerstats.js');
+var canvas = require('./canvas');
 
 var attackerSelection;
 var defenderSelection;
 var playerInTurn;
+
+function isBattlePossible() {
+    return attackerSelection && defenderSelection
+}
 
 var GameController = {
 
@@ -400,6 +424,7 @@ var GameController = {
             } else {
                 defenderSelection = null;
             }
+            canvas.enablebattle(isBattlePossible());
             return;
         }
         // Selected = true
@@ -420,9 +445,11 @@ var GameController = {
             // Attacker not yet set. Cannot set defender yet.
             region.setSelection(false);
         }
+        canvas.enablebattle(isBattlePossible());
+
     },
     goBattle: function() {
-        if (!attackerSelection || !defenderSelection) {
+        if (!isBattlePossible()) {
             alert('not everything selected!');
             return;
         }
@@ -443,7 +470,7 @@ var GameController = {
 }
 
 module.exports = GameController;
-},{"./battle.js":1,"./playerstats.js":12}],8:[function(require,module,exports){
+},{"./battle.js":1,"./canvas":2,"./playerstats.js":12}],8:[function(require,module,exports){
 var consts = require('./consts.js');
 var playerFactory = require('./player.js');
 
@@ -782,8 +809,9 @@ var PlayerFactory = {
 
 module.exports = PlayerFactory;
 },{"./carddeck":3,"./consts":4,"./util":14}],12:[function(require,module,exports){
-var consts = require('./consts.js');
+var consts = require('./consts');
 var gameplayers = require('./gameplayers');
+var canvas = require('./canvas');
 var currentplayer = 0;
 
 var gamestats = [];
@@ -856,7 +884,6 @@ var PlayerStats = {
         currentplayer = 0;
         playerrows[currentplayer].classList.add("activeplayer");
         playerrows[currentplayer].playerobj.startTurn();
-
     },
     updateStats: function () {
 
@@ -866,8 +893,12 @@ var PlayerStats = {
             stat.troopcol.innerText = stat.player.getState().getTroopCount();
             stat.draftcol.innerText = stat.player.getState().draft;
             stat.cardcol.innerText = stat.player.getState().cards.map(c=>c.display).join();
-        })
+        });
 
+        var nodraftleft = gamestats[currentplayer].player.getState().draft == 0;
+        canvas.enablewar(nodraftleft);
+        canvas.enableendturn(nodraftleft);
+        canvas.enablesellcards(gamestats[currentplayer].player.getState().cards.length >= 3);
     },
     nextPlayer: function () {
         var nextplayer = getNextPlayer(currentplayer);
@@ -897,7 +928,7 @@ var PlayerStats = {
 }
 
 module.exports = PlayerStats;
-},{"./consts.js":4,"./gameplayers":8}],13:[function(require,module,exports){
+},{"./canvas":2,"./consts":4,"./gameplayers":8}],13:[function(require,module,exports){
 var canvas = require('./canvas');
 var consts = require('./consts.js');
 var gamestate = require('./gamestate.js');

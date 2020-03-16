@@ -1,9 +1,14 @@
 var battle = require('./battle.js');
 var playerstats = require('./playerstats.js');
+var canvas = require('./canvas');
 
 var attackerSelection;
 var defenderSelection;
 var playerInTurn;
+
+function isBattlePossible() {
+    return attackerSelection && defenderSelection
+}
 
 var GameController = {
 
@@ -35,6 +40,7 @@ var GameController = {
             } else {
                 defenderSelection = null;
             }
+            canvas.enablebattle(isBattlePossible());
             return;
         }
         // Selected = true
@@ -55,9 +61,11 @@ var GameController = {
             // Attacker not yet set. Cannot set defender yet.
             region.setSelection(false);
         }
+        canvas.enablebattle(isBattlePossible());
+
     },
     goBattle: function() {
-        if (!attackerSelection || !defenderSelection) {
+        if (!isBattlePossible()) {
             alert('not everything selected!');
             return;
         }

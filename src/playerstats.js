@@ -1,5 +1,6 @@
-var consts = require('./consts.js');
+var consts = require('./consts');
 var gameplayers = require('./gameplayers');
+var canvas = require('./canvas');
 var currentplayer = 0;
 
 var gamestats = [];
@@ -72,7 +73,6 @@ var PlayerStats = {
         currentplayer = 0;
         playerrows[currentplayer].classList.add("activeplayer");
         playerrows[currentplayer].playerobj.startTurn();
-
     },
     updateStats: function () {
 
@@ -82,8 +82,12 @@ var PlayerStats = {
             stat.troopcol.innerText = stat.player.getState().getTroopCount();
             stat.draftcol.innerText = stat.player.getState().draft;
             stat.cardcol.innerText = stat.player.getState().cards.map(c=>c.display).join();
-        })
+        });
 
+        var nodraftleft = gamestats[currentplayer].player.getState().draft == 0;
+        canvas.enablewar(nodraftleft);
+        canvas.enableendturn(nodraftleft);
+        canvas.enablesellcards(gamestats[currentplayer].player.getState().cards.length >= 3);
     },
     nextPlayer: function () {
         var nextplayer = getNextPlayer(currentplayer);

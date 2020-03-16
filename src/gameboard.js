@@ -74,6 +74,7 @@ var GameBoard = {
 
     },
     reset: function () {
+        canvas.reset();
         regions.forEach(reg => reg.reset());
         gamePlayers.reset();
         gamecontroller.reset();
