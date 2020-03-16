@@ -369,6 +369,7 @@ var GameBoard = {
 
     },
     startWar: function() {
+        canvas.enablewar(false);
         regions.forEach(reg=>reg.gameStateChange());
     },
     goBattle: function() {
