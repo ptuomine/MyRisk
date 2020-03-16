@@ -63,7 +63,7 @@ var Continent = function (row, col) {
     }
 
     this.getContinentPoints = function () {
-        return regions.length / 2;
+        return Math.floor(regions.length / 2);
     }
 
     this.checkContinentOwner = function () {
