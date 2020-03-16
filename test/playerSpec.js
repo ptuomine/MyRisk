@@ -115,17 +115,24 @@ describe("player tests", function () {
         testSellCards(cards, points);
     });
 
-    it("sellCards - five cards with 3 same cards and 3 different cards", function () {
+    it("sellCards - five cards with 3 same cards and 3 different cards (using wild card)", function () {
 
         var cards = [deck.Cavalry, deck.Cavalry, deck.WildCard, deck.Infantry, deck.Infantry];
         var points = deck.cavarlryPoints*3;
         testSellCards(cards, points);
     });
 
-    it("sellCards - five cards with 3 same cards and 3 different cards (in different order)", function () {
+    it("sellCards - five cards with 3 same cards and 3 different cards (using wild card - in different order)", function () {
 
         var cards = [deck.Infantry, deck.Infantry, deck.WildCard, deck.Cavalry, deck.Cavalry];
         var points = deck.cavarlryPoints*3;
+        testSellCards(cards, points);
+    });
+
+    it("sellCards - five cards with 3 same cards and two wild cards cards", function () {
+
+        var cards = [deck.Infantry, deck.Infantry, deck.WildCard, deck.Infantry, deck.WildCard];
+        var points = deck.infantryPoints + deck.cavarlryPoints + deck.artilleryPoints;
         testSellCards(cards, points);
     });
 });

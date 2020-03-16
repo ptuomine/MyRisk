@@ -135,45 +135,65 @@ function player(id, name, color) {
             return b.points - a.points;
         })];
 
-        // Go through all possible sets of cards
-        permutatedCards.some(p => {
-            var set = checkcards(p);
-            if (set.length > 0) {
-                // sell the cards
-                var points = set.reduce((a, b) => a + b.points, 0);
-                state.draft += points;
-                set.forEach(s => {
-                    // find the card with the same amount of points
-                    var index = state.cards.findIndex(function (c) {
-                        return c.points == s.points;
-                    });
-                    if (index == -1) {
-                        // find a wild card instead
-                        index = state.cards.findIndex(function (c) {
-                            return deck.isWildCard(c);
-                        });
-                    }
-                    state.cards.splice(index, 1); // remove the card from the found index
-                });
-                return true;
-            }
-            return false;
+        // Go through all possible permutations of the (wild) cards
+        var validSetsOfThree = [];
+        permutatedCards.forEach(p => {
+            var sets = checkcards(p);
+            validSetsOfThree = validSetsOfThree.concat(sets);
         });
+
+        // Atleast one valid set of three was found
+        if (validSetsOfThree.length > 0) {
+
+            function getPoints(set) {
+                return set.reduce((a, b) => a + b.points, 0);
+            }
+
+            // Find the set with best points
+            const bestset = validSetsOfThree.reduce(function (setA, setB) {
+                return (getPoints(setA) > getPoints(setB)) ? setA : setB
+            })
+
+            // trade/sell the cards in the set
+            var points = getPoints(bestset);
+            state.draft += points;
+            bestset.forEach(s => {
+                // find the card with the same amount of points
+                var index = state.cards.findIndex(function (c) {
+                    return c.points == s.points;
+                });
+                if (index == -1) {
+                    // find a wild card instead
+                    index = state.cards.findIndex(function (c) {
+                        return deck.isWildCard(c);
+                    });
+                }
+                state.cards.splice(index, 1); // remove the card from the found index
+            });
+        }
 
         function checkcards(permutation) {
 
+            // array of valid sets found
+            var setsfound = [];
+
+            // current set
             var setofthree = permutation.slice(0, 3);
 
             // all different
-            if (util.isAllUnique(setofthree.map(s=>s.id))) return setofthree;
-            // all same
-            if (setofthree.every(c => c.id === setofthree[0].id)) return setofthree;
+            if (util.isAllUnique(setofthree.map(s => s.id))) {
+                setsfound.push(setofthree);
+            } else
+                // all same
+                if (setofthree.every(c => c.id === setofthree[0].id)) {
+                    setsfound.push(setofthree);
+                }
             // check next three (if exists)
             if (permutation.length > 3) {
-                var set = checkcards(permutation.slice(1,permutation.length));
-                return set;
+                var moresets = checkcards(permutation.slice(1, permutation.length));
+                setsfound = setsfound.concat(moresets);
             }
-            return []; // no valid set found
+            return setsfound; // no valid set found
         }
     }
 }

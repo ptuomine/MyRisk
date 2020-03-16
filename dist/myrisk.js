@@ -702,12 +702,12 @@ function player(id, name, color) {
 
         // Go through all possible sets of cards
         permutatedCards.some(p => {
-            var set = checkcards(p);
-            if (set.length > 0) {
+            var validsets = checkcards(p);
+            if (validsets.length > 0) {
                 // sell the cards
-                var points = set.reduce((a, b) => a + b.points, 0);
+                var points = validsets.reduce((a, b) => a + b.points, 0);
                 state.draft += points;
-                set.forEach(s => {
+                validsets.forEach(s => {
                     // find the card with the same amount of points
                     var index = state.cards.findIndex(function (c) {
                         return c.points == s.points;
@@ -729,7 +729,7 @@ function player(id, name, color) {
 
             var setofthree = permutation.slice(0, 3);
 
-            // all different
+            // all different // return sets!!
             if (util.isAllUnique(setofthree.map(s=>s.id))) return setofthree;
             // all same
             if (setofthree.every(c => c.id === setofthree[0].id)) return setofthree;
