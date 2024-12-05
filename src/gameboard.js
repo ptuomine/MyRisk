@@ -15,9 +15,9 @@ var GameBoard = {
         this.reset();
 
         // Build game board
-        for (row = 1; row <= consts.CONTINENT_ROWS; row++) {
+        for (var row = 1; row <= consts.CONTINENT_ROWS; row++) {
             canvas.addDivRow();
-            for (col = 1; col <= consts.CONTINENT_COLUMNS; col++) {
+            for (var col = 1; col <= consts.CONTINENT_COLUMNS; col++) {
                 var continent = buildContinent(row, col);
                 continents.push(continent);
             }

@@ -8,7 +8,7 @@ var random = 0;
 var GamePlayers = {
     init: function () {
         // Build players
-        for (i = 0; i < consts.PLAYER_COUNT; i++) {
+        for (var i = 0; i < consts.PLAYER_COUNT; i++) {
             players.push(playerFactory.getPlayerInstance());
         }
     },
