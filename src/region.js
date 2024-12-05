@@ -156,6 +156,30 @@ function region(row, col, contobj) {
         can = can && defendY <= attackY + 1 && defendY >= attackY - 1;
         return can;
     }
+
+    function checkcards(permutation) {
+
+        // array of valid sets found
+        var setsfound = [];
+
+        // current set
+        var setofthree = permutation.slice(0, 3);
+
+        // all different
+        if (util.isAllUnique(setofthree.map(s => s.id))) {
+            setsfound.push(setofthree);
+        } else
+            // all same
+            if (setofthree.every(c => c.id === setofthree[0].id)) {
+                setsfound.push(setofthree);
+            }
+        // check next three (if exists)
+        if (permutation.length > 3) {
+            var moresets = checkcards(permutation.slice(1, permutation.length));
+            setsfound = setsfound.concat(moresets);
+        }
+        return setsfound; // no valid set found
+    }
 }
 
 var RegionFactory = {
