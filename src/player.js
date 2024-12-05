@@ -115,8 +115,8 @@ function player(id, name, color) {
 
         } else if (wilds == 2) {
             // Get permutations for two wild cards
-            for (i = 0; i < allthree.length; i++) {
-                for (j = i; j < allthree.length; j++) {
+            for (var i = 0; i < allthree.length; i++) {
+                for (var j = i; j < allthree.length; j++) {
                     var permutation = [allthree[i], allthree[j]];
                     permutations.push(permutation);
                 }
