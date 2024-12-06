@@ -27,6 +27,10 @@ var GameController = {
 
         attackerSelection = null;
         defenderSelection = null;
+
+        if (playerInTurn.isAIPlayer) {
+            playerInTurn.makeMove();
+        }
     },
     getPlayerInTurn: function() {
         return playerInTurn;

@@ -2,12 +2,13 @@ var consts = require('./consts');
 var deck = require('./carddeck');
 var util = require('./util');
 
-function player(id, name, color) {
+function player(id, name, color, isAIPlayer = false) {
     var id = id;
     var name = name;
     var color = color;
     var state = {};
     var cardEarned = false;
+    this.isAIPlayer = isAIPlayer;
 
     this.reset = function () {
         state.regions = [];
@@ -202,13 +203,13 @@ var colors = consts.PLAYER_COLORS;
 var playerid = 0;
 
 var PlayerFactory = {
-    getPlayerInstance: function () {
+    getPlayerInstance: function (isAIPlayer = false) {
 
         if (playerid > colors.length - 1) return null; // no more colors left
 
         var color = colors[playerid];
         playerid++;
-        var newplayer = new player(playerid, "player" + playerid, color);
+        var newplayer = new player(playerid, "player" + playerid, color, isAIPlayer);
         newplayer.reset();
         return newplayer;
 
