@@ -68,7 +68,7 @@ var PlayerStats = {
 
         })
     },
-    reset: function () {
+    resetAndStartTurn: function () {
         playerrows[currentplayer].classList.remove("activeplayer");
         currentplayer = 0;
         playerrows[currentplayer].classList.add("activeplayer");
@@ -113,6 +113,17 @@ var PlayerStats = {
     },
     sellCards: function() {
         playerrows[currentplayer].playerobj.sellCards();
+    },
+    updateAIPlayerStats: function(player) {
+        var playerIndex = players.indexOf(player);
+        if (playerIndex !== -1) {
+            var stat = gamestats[playerIndex];
+            stat.contcol.innerText = player.getState().continents.length;
+            stat.regcol.innerText = player.getState().regions.length;
+            stat.troopcol.innerText = player.getState().getTroopCount();
+            stat.draftcol.innerText = player.getState().draft;
+            stat.cardcol.innerText = player.getState().cards.map(c => c.display).join();
+        }
     }
 }
 

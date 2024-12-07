@@ -17,8 +17,17 @@
         <button id="gobattle" onClick="goBattle()">Go Battle</button>
         <button id="endturn" onClick="endTurn()">End Turn</button>
         <button id="sellcards" onClick="sellCards()">Trade</button>
+        <div id="aiplayerselection">
+            <label><input type="checkbox" id="aiPlayer1" checked> AI Player 1</label>
+            <label><input type="checkbox" id="aiPlayer2" checked> AI Player 2</label>
+            <label><input type="checkbox" id="aiPlayer3" checked> AI Player 3</label>
+        </div>
         <div id=playerstats>
             <table id="playertable" Border=1></table>
+        </div>
+        <div id="aiMoveSummary">
+            <h3>AI Move Summary</h3>
+            <ul id="aiMoveList"></ul>
         </div>
     </div>
     <div id="continentsArea" width="400" height="800" style="border:3px solid #d3d3d3;"></div>
