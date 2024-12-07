@@ -7,20 +7,35 @@ var attackerSelection;
 var defenderSelection;
 var playerInTurn;
 
+/**
+ * Checks if a battle is possible by verifying if both attacker and defender are selected.
+ * @returns {boolean} - Returns true if both attacker and defender are selected, otherwise false.
+ */
 function isBattlePossible() {
     return attackerSelection && defenderSelection
 }
 
 var GameController = {
 
+    /**
+     * Initializes the game controller by resetting the game state.
+     */
     init: function () {
         this.reset();
     },
+
+    /**
+     * Resets the game controller by setting the player in turn and clearing selections.
+     */
     reset: function() {
         playerInTurn = playerstats.getFirstPlayer();
         attackerSelection = null;
         defenderSelection = null;
     },
+
+    /**
+     * Advances to the next turn by ending the current player's turn, changing the player in turn, and resetting selections.
+     */
     nextTurn: function() {
         playerInTurn.endTurn();
         playerInTurn = playerstats.nextPlayer(); // change the player in turn
@@ -33,9 +48,19 @@ var GameController = {
         attackerSelection = null;
         defenderSelection = null;
     },
+
+    /**
+     * Returns the player currently in turn.
+     * @returns {Object} - The player currently in turn.
+     */
     getPlayerInTurn: function() {
         return playerInTurn;
     },
+
+    /**
+     * Sets the selected region for the current player. Handles selection and deselection of attacker and defender regions.
+     * @param {Object} region - The region to be selected or deselected.
+     */
     setSelectedRegion: function(region) {
 
         if (!region.isSelected()) {
@@ -69,6 +94,12 @@ var GameController = {
         canvas.enablebattle(isBattlePossible());
 
     },
+
+    /**
+     * Executes the battle between the selected attacker and defender regions.
+     * If the attack is successful, the defender region becomes the new attacker.
+     * If the attack fails, both selections are cleared.
+     */
     goBattle: function() {
         if (!isBattlePossible()) {
             alert('not everything selected!');

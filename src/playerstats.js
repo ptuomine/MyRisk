@@ -8,7 +8,13 @@ var gamestats = [];
 var playerrows = [];
 var players = gameplayers.getAllPlayers();
 
+/**
+ * Represents the PlayerStats object that manages the player statistics in the game.
+ */
 var PlayerStats = {
+    /**
+     * Initializes the PlayerStats object by building the player table and setting up the game statistics.
+     */
     init: function () {
 
         var table = document.getElementById("playertable");
@@ -68,12 +74,18 @@ var PlayerStats = {
 
         })
     },
+    /**
+     * Resets the player statistics and sets the current player to the first player.
+     */
     resetAndStartTurn: function () {
         playerrows[currentplayer].classList.remove("activeplayer");
         currentplayer = 0;
         playerrows[currentplayer].classList.add("activeplayer");
         playerrows[currentplayer].playerobj.startTurn();
     },
+    /**
+     * Updates the player statistics by refreshing the data in the player table.
+     */
     updateStats: function () {
 
         gamestats.forEach(stat => {
@@ -89,6 +101,10 @@ var PlayerStats = {
         canvas.enableendturn(nodraftleft);
         canvas.enablesellcards(gamestats[currentplayer].player.getState().cards.length >= 3);
     },
+    /**
+     * Advances to the next player and updates the active player in the player table.
+     * @returns {Object} The next player object.
+     */
     nextPlayer: function () {
         var nextplayer = getNextPlayer(currentplayer);
         if (currentplayer == nextplayer) {
@@ -102,15 +118,27 @@ var PlayerStats = {
             return playerrows[nextplayer].playerobj;
         }
 
+        /**
+         * Determines the next player who is not dead.
+         * @param {number} rowindex - The current player's row index.
+         * @returns {number} The next player's row index.
+         */
         function getNextPlayer(rowindex) {
             nextplayer = rowindex < playerrows.length - 1 ? rowindex + 1 : 0;
             if (playerrows[nextplayer].playerobj.isDead()) return getNextPlayer(nextplayer);
             return nextplayer;
         }
     },
+    /**
+     * Returns the first player in the player table.
+     * @returns {Object} The first player object.
+     */
     getFirstPlayer: function () {
         return playerrows[0].playerobj;
     },
+    /**
+     * Sells the current player's cards.
+     */
     sellCards: function() {
         playerrows[currentplayer].playerobj.sellCards();
     },

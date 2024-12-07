@@ -1,3 +1,6 @@
+/**
+ * Represents an AI player in the game.
+ */
 class AIPlayer {
     constructor(player) {
         this.player = player;
@@ -63,7 +66,14 @@ class AIPlayer {
     }
 }
 
+/**
+ * Factory object to create instances of AI players.
+ */
 var AIPlayerFactory = {
+    /**
+     * Creates and returns a new instance of an AI player.
+     * @returns {aiplayer} A new AI player instance.
+     */
     GetAIPlayerInstance: function(player) {
         return new AIPlayer(player);
     }
