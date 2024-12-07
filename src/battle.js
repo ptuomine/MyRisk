@@ -1,7 +1,16 @@
 var consts = require('./consts');
 
+/**
+ * Represents the Battle object that handles the battle logic between two regions.
+ */
 var Battle = {
 
+    /**
+     * Executes the battle between the attacking and defending regions.
+     * @param {Object} regionAttack - The attacking region.
+     * @param {Object} regionDefense - The defending region.
+     * @returns {boolean} - Returns true if the attack is successful, otherwise false.
+     */
     go: function(regionAttack, regionDefense) {
 
         var defendingtroops = regionDefense.getTroopCount();

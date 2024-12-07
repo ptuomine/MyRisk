@@ -10,6 +10,9 @@ var regions = [];
 var continents = [];
 
 var GameBoard = {
+    /**
+     * Initializes the game board by building continents and regions.
+     */
     init: function () {
 
         this.reset();
@@ -23,6 +26,12 @@ var GameBoard = {
             }
         }
 
+        /**
+         * Builds a continent and its regions, and adds it to the game board.
+         * @param {number} cont_row - The row number of the continent.
+         * @param {number} cont_col - The column number of the continent.
+         * @returns {Object} The built continent object.
+         */
         function buildContinent(cont_row, cont_col) {
             var contobj = continentFactory.getContinentInstance(row, col);
             buildRegions(row, col, contobj);
@@ -30,6 +39,12 @@ var GameBoard = {
             return contobj;
         }
 
+        /**
+         * Builds regions for a given continent and adds them to the continent object.
+         * @param {number} cont_row - The row number of the continent.
+         * @param {number} cont_col - The column number of the continent.
+         * @param {Object} contobj - The continent object to which the regions will be added.
+         */
         function buildRegions(cont_row, cont_col, contobj) {
 
             for (i = 1; i <= consts.CONTINENT_WIDTH; i++) {
@@ -46,6 +61,9 @@ var GameBoard = {
             }
         }
     },
+    /**
+     * Starts the game by setting up the initial game board and assigning troops to regions.
+     */
     startGame: function() {
 
 
@@ -73,6 +91,9 @@ var GameBoard = {
 
 
     },
+    /**
+     * Resets the game board by clearing regions, resetting players, and resetting the game controller.
+     */
     reset: function () {
         canvas.reset();
         regions.forEach(reg => reg.reset());
@@ -80,13 +101,22 @@ var GameBoard = {
         gamecontroller.reset();
 
     },
+    /**
+     * Starts the war phase of the game by enabling war mode and updating the game state.
+     */
     startWar: function() {
         canvas.enablewar(false);
         regions.forEach(reg=>reg.gameStateChange());
     },
+    /**
+     * Executes the battle logic by calling the game controller's goBattle method.
+     */
     goBattle: function() {
         gamecontroller.goBattle();
     },
+    /**
+     * Advances to the next turn by starting the war phase and updating the game controller.
+     */
     nextTurn: function() {
         this.startWar();
         gamecontroller.nextTurn();
