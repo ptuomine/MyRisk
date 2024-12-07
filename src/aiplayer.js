@@ -10,26 +10,32 @@ class AIPlayer {
     draftTroops() {
         const regions = this.player.getState().regions;
         const draftCount = this.player.getState().draft;
+        const dominantContinentId = this.getDominantContinentId();
 
         for (let i = 0; i < draftCount; i++) {
-            let targetRegion = this.selectRegionToDraft(regions);
+            let targetRegion = this.selectRegionToDraft(regions, dominantContinentId);
             targetRegion.addTroops();
             this.moveSummary.push(`Drafted troops to region ${targetRegion.id}`);
         }
     }
 
-    selectRegionToDraft(regions) {
+    selectRegionToDraft(regions, dominantContinentId) {
+        const regionsInDominantContinent = regions.filter(region => region.getContinent().getId() === dominantContinentId);
+        if (regionsInDominantContinent.length > 0) {
+            return regionsInDominantContinent[Math.floor(Math.random() * regionsInDominantContinent.length)];
+        }
         return regions[Math.floor(Math.random() * regions.length)];
     }
 
     selectBattles() {
         const regions = this.player.getState().regions;
+        const dominantContinent = this.getDominantContinentId();
         const battles = [];
 
         regions.forEach(region => {
             const adjacentRegions = this.getAdjacentRegions(region);
             adjacentRegions.forEach(adjRegion => {
-                if (adjRegion.getPlayer() !== this.player && region.getTroopCount() > adjRegion.getTroopCount()) {
+                if (adjRegion.getPlayer() !== this.player && region.getTroopCount() > adjRegion.getTroopCount() && adjRegion.getContinent() === dominantContinent) {
                     battles.push({ attacker: region, defender: adjRegion });
                 }
             });
@@ -40,6 +46,28 @@ class AIPlayer {
 
     getAdjacentRegions(region) {
         return this.player.getState().regions.filter(r => r !== region);
+    }
+
+    getDominantContinentId() {
+        const continentCounts = {};
+        this.player.getState().regions.forEach(region => {
+            const continent = region.getContinent().getId();
+            if (!continentCounts[continent]) {
+                continentCounts[continent] = 0;
+            }
+            continentCounts[continent] += region.getTroopCount();
+        });
+
+        let dominantContinent = null;
+        let maxCount = 0;
+        for (const continent in continentCounts) {
+            if (continentCounts[continent] > maxCount) {
+                maxCount = continentCounts[continent];
+                dominantContinent = continent;
+            }
+        }
+
+        return dominantContinent;
     }
 
     summarizeMoves() {
