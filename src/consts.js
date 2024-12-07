@@ -1,3 +1,8 @@
+/**
+ * Constants used throughout the game.
+ * These constants define the dimensions of the game board, player information, and game statistics.
+ */
+
 var continent_columns = 2;
 var continent_rows = 2;
 var continent_width = 2;
