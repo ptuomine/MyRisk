@@ -5,6 +5,7 @@ var regionFactory = require('./region.js');
 var gamePlayers = require('./gameplayers.js');
 var gamecontroller = require('./gamecontroller.js');
 var util = require('./util.js');
+var AIPlayerFactory = require('./aiplayer.js');
 
 var regions = [];
 var continents = [];
@@ -89,7 +90,10 @@ var GameBoard = {
         // Second assign rest of the player troops to its regions
         players.forEach(p=>p.AssignTroopsToRegions());
 
-
+        // Check if the first player is an AI player and trigger AI moves
+        // if (players[0].isAI) {
+        //     this.handleAITurn(players[0]);
+        // }
     },
     /**
      * Resets the game board by clearing regions, resetting players, and resetting the game controller.
@@ -120,6 +124,12 @@ var GameBoard = {
     nextTurn: function() {
         this.startWar();
         gamecontroller.nextTurn();
+    },
+    handleAITurn: function(player) {
+        // var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(player);
+        // aiPlayer.executeTurn();
+        //gamecontroller.disableHumanInteraction();
+        //gamecontroller.summarizeAIMoves();
     }
 }
 

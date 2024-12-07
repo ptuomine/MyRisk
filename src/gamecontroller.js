@@ -1,6 +1,7 @@
 var battle = require('./battle.js');
 var playerstats = require('./playerstats.js');
 var canvas = require('./canvas');
+var AIPlayerFactory = require('./aiplayer.js');
 
 var attackerSelection;
 var defenderSelection;
@@ -39,6 +40,10 @@ var GameController = {
         playerInTurn.endTurn();
         playerInTurn = playerstats.nextPlayer(); // change the player in turn
         playerInTurn.startTurn();
+
+        // if (playerInTurn.isAI) {
+        //     this.executeAIMoves(playerInTurn);
+        // }
 
         attackerSelection = null;
         defenderSelection = null;
@@ -113,6 +118,25 @@ var GameController = {
             attackerSelection = null;
             defenderSelection = null;
         }
+    },
+    disableHumanInteraction: function() {
+        document.getElementById("gamepanel").style.pointerEvents = "none";
+        document.getElementById("newgame").style.pointerEvents = "auto";
+    },
+    summarizeAIMoves: function() {
+        const summaryElement = document.getElementById("aiMoveList");
+        summaryElement.innerHTML = "";
+        playerInTurn.moveSummary.forEach(move => {
+            const listItem = document.createElement("li");
+            listItem.innerText = move;
+            summaryElement.appendChild(listItem);
+        });
+    },
+    executeAIMoves: function(player) {
+        var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(player);
+        aiPlayer.executeTurn();
+        //this.disableHumanInteraction();
+        this.summarizeAIMoves();
     }
 }
 

@@ -1,6 +1,7 @@
 var consts = require('./consts');
 var deck = require('./carddeck');
 var util = require('./util');
+var AIPlayerFactory = require('./aiplayer.js');
 
 /**
  * Represents a player in the game.
@@ -15,6 +16,7 @@ function player(id, name, color) {
     var color = color;
     var state = {};
     var cardEarned = false;
+    this.isAI = false;
 
     /**
      * Resets the player's state.
@@ -145,6 +147,11 @@ function player(id, name, color) {
         var regionpoints = state.regions.length < 3 ? state.regions.length / 3 : 3;
         var continentpoints = state.continents.reduce((a, b) => a + b.getContinentPoints(), 0);
         state.draft += regionpoints + continentpoints;
+
+        if (this.isAI) {
+            var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(this);
+            aiPlayer.executeTurn();
+        }
     }
 
     /**

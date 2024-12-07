@@ -4,6 +4,7 @@ var gamecontroller = require('./gamecontroller');
 var playerstats = require('./playerstats.js');
 var gamestate = require('./gamestate.js');
 var deck = require('./carddeck.js');
+var AIPlayerFactory = require('./aiplayer.js');
 
 /**
  * Resets the game board, initializes the game state, and starts a new game.
@@ -14,9 +15,13 @@ window.resetGameBoard = function() {
     gamestate.setGameState(gamestate.StartState);
     gameboard.reset();
     gameboard.startGame();
-    playerstats.reset();
+    playerstats.resetAndStartTurn();
     playerstats.updateStats();
     deck.init();
+
+    // if (playerstats.getFirstPlayer().isAI) {
+    //     handleAIMoves(playerstats.getFirstPlayer());
+    // }
 }
 
 /**
@@ -56,15 +61,22 @@ window.sellCards = function() {
     playerstats.updateStats();
 }
 
-// Initialize the game components
-gameplayers.init(); // Initialize the game players
-playerstats.init(); // Initialize the player statistics
-gamecontroller.init(); // Initialize the game controller
-gamestate.init(); // Initialize the game state
-gameboard.init(); // Build the game board
-deck.init(); // Initialize the card deck
+window.handleAIMoves = function(player) {
+    var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(player);
+    aiPlayer.executeTurn();
+    //amecontroller.disableHumanInteraction();
+    gamecontroller.summarizeAIMoves();
+}
+
+// initialize game
+gameplayers.init(); // initialize the game players
+playerstats.init(); // initiaize the player statistics
+gamecontroller.init(); // initiize the game controller
+gamestate.init(); // initialize the game state
+gameboard.init(); // build game board
+deck.init();
 
 // Start the game
 gameboard.startGame();
-playerstats.reset();
+playerstats.resetAndStartTurn();
 playerstats.updateStats();

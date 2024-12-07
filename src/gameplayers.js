@@ -15,7 +15,12 @@ var GamePlayers = {
     init: function () {
         // Build players
         for (var i = 0; i < consts.PLAYER_COUNT; i++) {
-            players.push(playerFactory.getPlayerInstance());
+            var player = playerFactory.getPlayerInstance();
+            var aiCheckbox = document.getElementById(`aiPlayer${i + 1}`);
+            if (aiCheckbox && aiCheckbox.checked) {
+                player.isAI = true;
+            }
+            players.push(player);
         }
     },
     /**
@@ -55,6 +60,9 @@ var GamePlayers = {
      */
     reset: function() {
         players.forEach(player=>player.reset());
+    },
+    isAIPlayer: function(player) {
+        return player.isAI;
     }
 }
 
