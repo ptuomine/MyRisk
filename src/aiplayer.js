@@ -1,13 +1,10 @@
 var continentFactory = require('./continent.js');
 var consts = require('./consts.js');
-//var gamecontroller = require('./gamecontroller.js');
 
-/**
- * Represents an AI player in the game.
- */
 class AIPlayer {
-    constructor(player) {
+    constructor(player, gamecontroller) {
         this.player = player;
+        this.gamecontroller = gamecontroller;
         this.moveSummary = [];
     }
 
@@ -40,15 +37,12 @@ class AIPlayer {
         const allRegionsInDominantContinent = dominantContinent.getRegions();
         const battles = [];
     
-        // Iterate through player's regions in the dominant continent
         regionsInDominantContinent.forEach(region => {
-            // Get adjacent regions and filter out regions belonging to the player
             const adjacentOpponentRegions = this.filterOpponentRegions(
                 this.getAdjacentRegions(region, allRegionsInDominantContinent),
                 this.player
             );
     
-            // Find valid battles
             adjacentOpponentRegions.forEach(adjRegion => {
                 if (region.getTroopCount() > adjRegion.getTroopCount()) {
                     battles.push({ attacker: region, defender: adjRegion });
@@ -58,7 +52,6 @@ class AIPlayer {
     
         return battles;
     }
-    
 
     filterOpponentRegions(regions, player) {
         return regions.filter(region => region.getPlayer() !== player);
@@ -68,17 +61,13 @@ class AIPlayer {
         const regionRow = region.getRow();
         const regionCol = region.getColumn();
     
-        // Assuming a simple rule where adjacent regions share a border
         return regions.filter(r => {
             const rowDiff = Math.abs(r.getRow() - regionRow);
             const colDiff = Math.abs(r.getColumn() - regionCol);
     
-            // Adjacent if they are horizontally, vertically, or diagonally neighboring
             return (rowDiff <= 1 && colDiff <= 1) && r !== region;
         });
     }
-    
-    
 
     getDominantContinentId() {
         const continentCounts = {};
@@ -116,26 +105,24 @@ class AIPlayer {
         this.moveSummary = [];
         this.draftTroops();
         const battles = this.selectBattles();
-        battles.forEach(battle => {
-            battle.attacker.setSelection(true);
-            battle.defender.setSelection(true);
-            gamecontroller.goBattle();
-            this.moveSummary.push(`Attacked region ${battle.defender.getId()} from region ${battle.attacker.getId()}`);
+        return battles.map(battle => {
+            return {
+                attacker: battle.attacker,
+                defender: battle.defender,
+                action: () => {
+                    battle.attacker.setSelection(true);
+                    battle.defender.setSelection(true);
+                    this.gamecontroller.goBattle();
+                    this.moveSummary.push(`Attacked region ${battle.defender.getId()} from region ${battle.attacker.getId()}`);
+                }
+            };
         });
-        this.summarizeMoves();
     }
 }
 
-/**
- * Factory object to create instances of AI players.
- */
 var AIPlayerFactory = {
-    /**
-     * Creates and returns a new instance of an AI player.
-     * @returns {aiplayer} A new AI player instance.
-     */
-    GetAIPlayerInstance: function(player) {
-        return new AIPlayer(player);
+    GetAIPlayerInstance: function(player, gamecontroller) {
+        return new AIPlayer(player, gamecontroller);
     }
 }
 
