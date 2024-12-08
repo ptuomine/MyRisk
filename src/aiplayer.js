@@ -105,18 +105,14 @@ class AIPlayer {
         this.moveSummary = [];
         this.draftTroops();
         const battles = this.selectBattles();
-        return battles.map(battle => {
-            return {
-                attacker: battle.attacker,
-                defender: battle.defender,
-                action: () => {
-                    battle.attacker.setSelection(true);
-                    battle.defender.setSelection(true);
-                    this.gamecontroller.goBattle();
-                    this.moveSummary.push(`Attacked region ${battle.defender.getId()} from region ${battle.attacker.getId()}`);
-                }
-            };
+        battles.forEach(battle => {
+            if (battle.defender.getPlayer().getId()==this.player.getId()) return; // the defender region already won
+            this.gamecontroller.setAttackerRegion(battle.attacker);
+            this.gamecontroller.setDefenderRegion(battle.defender);
+            this.gamecontroller.goBattle();
+            this.moveSummary.push(`Attacked region ${battle.defender.getId()} from region ${battle.attacker.getId()}`);
         });
+        this.summarizeMoves();
     }
 }
 

@@ -5,7 +5,6 @@ var regionFactory = require('./region.js');
 var gamePlayers = require('./gameplayers.js');
 var gamecontroller = require('./gamecontroller.js');
 var util = require('./util.js');
-//var AIPlayerFactory = require('./aiplayer.js');
 
 var regions = [];
 //var continents = [];

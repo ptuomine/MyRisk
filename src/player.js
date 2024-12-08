@@ -150,12 +150,6 @@ function player(id, name, color) {
         var regionpoints = state.regions.length < 3 ? state.regions.length / 3 : 3;
         var continentpoints = state.continents.reduce((a, b) => a + b.getContinentPoints(), 0);
         state.draft += regionpoints + continentpoints;
-
-        if (this.isAI) {
-            var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(this, gamecontroller);
-            var battleActions = aiPlayer.executeTurn();
-            battleActions.forEach(action => action());
-        }
     }
 
     /**
