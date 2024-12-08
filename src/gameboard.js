@@ -5,10 +5,10 @@ var regionFactory = require('./region.js');
 var gamePlayers = require('./gameplayers.js');
 var gamecontroller = require('./gamecontroller.js');
 var util = require('./util.js');
-var AIPlayerFactory = require('./aiplayer.js');
+//var AIPlayerFactory = require('./aiplayer.js');
 
 var regions = [];
-var continents = [];
+//var continents = [];
 
 var GameBoard = {
     /**
@@ -23,7 +23,7 @@ var GameBoard = {
             canvas.addDivRow();
             for (var col = 1; col <= consts.CONTINENT_COLUMNS; col++) {
                 var continent = buildContinent(row, col);
-                continents.push(continent);
+//                continents.push(continent);
             }
         }
 
@@ -34,7 +34,7 @@ var GameBoard = {
          * @returns {Object} The built continent object.
          */
         function buildContinent(cont_row, cont_col) {
-            var contobj = continentFactory.getContinentInstance(row, col);
+            var contobj = continentFactory.createContinentInstance(row, col);
             buildRegions(row, col, contobj);
             canvas.addContinent(contobj);
             return contobj;
@@ -80,7 +80,7 @@ var GameBoard = {
             player.addRegion(region);
         });
 
-        if (continents.some(c=>c.checkContinentOwner() != consts.NOPLAYER)) {
+        if (continentFactory.getAllContinents().some(c=>c.checkContinentOwner() != consts.NOPLAYER)) {
             // none of the continents should be owned in the beginning
             players.forEach(p=>p.reset());
             regions.forEach(r=>r.reset());
@@ -124,12 +124,6 @@ var GameBoard = {
     nextTurn: function() {
         this.startWar();
         gamecontroller.nextTurn();
-    },
-    handleAITurn: function(player) {
-        // var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(player);
-        // aiPlayer.executeTurn();
-        //gamecontroller.disableHumanInteraction();
-        //gamecontroller.summarizeAIMoves();
     }
 }
 

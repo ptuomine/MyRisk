@@ -4,7 +4,7 @@ var gamecontroller = require('./gamecontroller');
 var playerstats = require('./playerstats.js');
 var gamestate = require('./gamestate.js');
 var deck = require('./carddeck.js');
-var AIPlayerFactory = require('./aiplayer.js');
+//var AIPlayerFactory = require('./aiplayer.js');
 
 /**
  * Resets the game board, initializes the game state, and starts a new game.
@@ -61,12 +61,12 @@ window.sellCards = function() {
     playerstats.updateStats();
 }
 
-window.handleAIMoves = function(player) {
-    var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(player);
-    aiPlayer.executeTurn();
-    //amecontroller.disableHumanInteraction();
-    gamecontroller.summarizeAIMoves();
-}
+// window.handleAIMoves = function(player) {
+//     var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(player);
+//     aiPlayer.executeTurn();
+//     //amecontroller.disableHumanInteraction();
+//     gamecontroller.summarizeAIMoves();
+// }
 
 // initialize game
 gameplayers.init(); // initialize the game players

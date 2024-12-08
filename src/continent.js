@@ -55,6 +55,15 @@ var Continent = function (row, col) {
         return consts.NOPLAYER;
     }
 
+    this.getRegions = function() {
+        return regions;
+    }
+
+    this.getPlayerRegions = function(player) {
+        const playerRegionsInThisContinent = regions.filter(region => region.getPlayer().getId() === player.getId());
+        return playerRegionsInThisContinent;
+    }
+
     this.element = getContinentElement();
 
     /**
@@ -125,6 +134,8 @@ var Continent = function (row, col) {
     }
 }
 
+var continents = [];
+
 /**
  * Factory object to create instances of continents.
  */
@@ -136,10 +147,29 @@ var ContinentFactory = {
      * @param {number} col - The column number of the continent.
      * @returns {Continent} A new continent instance.
      */
-    getContinentInstance(row, col) {
-        return new Continent(row, col);
-    }
+    createContinentInstance(row, col) {
+        var newContinent = new Continent(row, col);
+        continents.push(newContinent);
+        return newContinent;
+    },
 
+    getAllContinents() {
+        return continents;
+    },
+
+    clearContinents() {
+        continents = [];
+    },
+
+    getContinentInstanceById(id) {
+        var found = null;
+        continents.forEach(function(continent, index) {
+            if (continent.getId() == id) {
+                found = continent;
+            }
+        });
+        return found;
+    }
 }
 
 module.exports = ContinentFactory;

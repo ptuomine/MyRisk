@@ -3,10 +3,10 @@
  * These constants define the dimensions of the game board, player information, and game statistics.
  */
 
-var continent_columns = 2;
-var continent_rows = 2;
-var continent_width = 2;
-var continent_height = 2;
+var continent_columns = 2; // number of continents on x axis
+var continent_rows = 2; // number of continents on y axis
+var continent_width = 2; // number of regions in continent on x axis
+var continent_height = 2; // number of regions in content on y axis
 var region_width = 50;
 var region_height = 50;
 var noplayer = "FREE"

@@ -18,6 +18,10 @@ function player(id, name, color) {
     var cardEarned = false;
     this.isAI = false;
 
+    this.getId = function() {
+        return id;
+    }
+
     /**
      * Resets the player's state.
      */

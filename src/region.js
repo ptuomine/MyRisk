@@ -83,6 +83,10 @@ function region(row, col, contobj) {
 
     this.id = elementid;
 
+    this.getId = function() {
+        return this.id;
+    }
+
     /**
      * Initializes the region by resetting its state.
      */

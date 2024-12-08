@@ -1,7 +1,7 @@
 var battle = require('./battle.js');
 var playerstats = require('./playerstats.js');
 var canvas = require('./canvas');
-var AIPlayerFactory = require('./aiplayer.js');
+//var AIPlayerFactory = require('./aiplayer.js');
 
 var attackerSelection;
 var defenderSelection;
@@ -132,12 +132,12 @@ var GameController = {
             summaryElement.appendChild(listItem);
         });
     },
-    executeAIMoves: function(player) {
-        var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(player);
-        aiPlayer.executeTurn();
-        //this.disableHumanInteraction();
-        this.summarizeAIMoves();
-    }
+    // executeAIMoves: function(player) {
+    //     var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(player);
+    //     aiPlayer.executeTurn();
+    //     //this.disableHumanInteraction();
+    //     this.summarizeAIMoves();
+    // }
 }
 
 module.exports = GameController;

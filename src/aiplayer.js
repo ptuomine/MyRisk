@@ -1,3 +1,7 @@
+var continentFactory = require('./continent.js');
+var consts = require('./consts.js');
+//var gamecontroller = require('./gamecontroller.js');
+
 /**
  * Represents an AI player in the game.
  */
@@ -20,7 +24,9 @@ class AIPlayer {
     }
 
     selectRegionToDraft(regions, dominantContinentId) {
-        const regionsInDominantContinent = regions.filter(region => region.getContinent().getId() === dominantContinentId);
+        var dominantContinent = continentFactory.getContinentInstanceById(dominantContinentId);
+        var regionsInDominantContinent = dominantContinent.getPlayerRegions(this.player);
+
         if (regionsInDominantContinent.length > 0) {
             return regionsInDominantContinent[Math.floor(Math.random() * regionsInDominantContinent.length)];
         }
@@ -28,25 +34,51 @@ class AIPlayer {
     }
 
     selectBattles() {
-        const regions = this.player.getState().regions;
-        const dominantContinent = this.getDominantContinentId();
+        const dominantContinentId = this.getDominantContinentId();
+        const dominantContinent = continentFactory.getContinentInstanceById(dominantContinentId);
+        const regionsInDominantContinent = dominantContinent.getPlayerRegions(this.player);
+        const allRegionsInDominantContinent = dominantContinent.getRegions();
         const battles = [];
-
-        regions.forEach(region => {
-            const adjacentRegions = this.getAdjacentRegions(region);
-            adjacentRegions.forEach(adjRegion => {
-                if (adjRegion.getPlayer() !== this.player && region.getTroopCount() > adjRegion.getTroopCount() && adjRegion.getContinent() === dominantContinent) {
+    
+        // Iterate through player's regions in the dominant continent
+        regionsInDominantContinent.forEach(region => {
+            // Get adjacent regions and filter out regions belonging to the player
+            const adjacentOpponentRegions = this.filterOpponentRegions(
+                this.getAdjacentRegions(region, allRegionsInDominantContinent),
+                this.player
+            );
+    
+            // Find valid battles
+            adjacentOpponentRegions.forEach(adjRegion => {
+                if (region.getTroopCount() > adjRegion.getTroopCount()) {
                     battles.push({ attacker: region, defender: adjRegion });
                 }
             });
         });
-
+    
         return battles;
     }
+    
 
-    getAdjacentRegions(region) {
-        return this.player.getState().regions.filter(r => r !== region);
+    filterOpponentRegions(regions, player) {
+        return regions.filter(region => region.getPlayer() !== player);
+    }    
+
+    getAdjacentRegions(region, regions) {
+        const regionRow = region.getRow();
+        const regionCol = region.getColumn();
+    
+        // Assuming a simple rule where adjacent regions share a border
+        return regions.filter(r => {
+            const rowDiff = Math.abs(r.getRow() - regionRow);
+            const colDiff = Math.abs(r.getColumn() - regionCol);
+    
+            // Adjacent if they are horizontally, vertically, or diagonally neighboring
+            return (rowDiff <= 1 && colDiff <= 1) && r !== region;
+        });
     }
+    
+    
 
     getDominantContinentId() {
         const continentCounts = {};
