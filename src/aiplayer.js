@@ -43,10 +43,12 @@ class AIPlayer {
                 this.player
             );
     
-            adjacentOpponentRegions.forEach(adjRegion => {
+            adjacentOpponentRegions.some(adjRegion => {
                 if (region.getTroopCount() > adjRegion.getTroopCount()) {
                     battles.push({ attacker: region, defender: adjRegion });
+                    return true; // Stop further iterations
                 }
+                return false;
             });
         });
     
@@ -71,6 +73,7 @@ class AIPlayer {
 
     getDominantContinentId() {
         const continentCounts = {};
+        const playerContinents = new Set(this.player.getState().continents.map(continent => continent.getId()));
         this.player.getState().regions.forEach(region => {
             const continent = region.getContinent().getId();
             if (!continentCounts[continent]) {
@@ -82,7 +85,7 @@ class AIPlayer {
         let dominantContinent = null;
         let maxCount = 0;
         for (const continent in continentCounts) {
-            if (continentCounts[continent] > maxCount) {
+            if (continentCounts[continent] > maxCount && !playerContinents.has(continent)) {
                 maxCount = continentCounts[continent];
                 dominantContinent = continent;
             }
