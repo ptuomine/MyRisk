@@ -22,10 +22,10 @@ class AIPlayer {
 
     selectRegionToDraft(regions, dominantContinentId) {
         var dominantContinent = continentFactory.getContinentInstanceById(dominantContinentId);
-        var regionsInDominantContinent = dominantContinent.getPlayerRegions(this.player);
+        var borderRegionsInDominantContinent = dominantContinent.getPlayerBorderRegions(this.player);
 
-        if (regionsInDominantContinent.length > 0) {
-            return regionsInDominantContinent[Math.floor(Math.random() * regionsInDominantContinent.length)];
+        if (borderRegionsInDominantContinent.length > 0) {
+            return borderRegionsInDominantContinent[Math.floor(Math.random() * borderRegionsInDominantContinent.length)];
         }
         return regions[Math.floor(Math.random() * regions.length)];
     }

@@ -17,6 +17,7 @@ window.resetGameBoard = function() {
     playerstats.resetAndStartTurn();
     playerstats.updateStats();
     deck.init();
+    gamecontroller.startAI();
 }
 
 /**
