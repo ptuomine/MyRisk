@@ -246,6 +246,32 @@ function region(row, col, contobj) {
         can = can && defendY <= attackY + 1 && defendY >= attackY - 1;
         return can;
     }
+
+    /**
+     * Returns the adjacent regions of the current region in the current continent.
+     * @returns {Array} An array of adjacent regions.
+     */
+    this.getAdjacentRegionsInContinent = function() {
+        const regionRow = this.getRow();
+        const regionCol = this.getColumn();
+        const allRegions = continent.getRegions();
+
+        return allRegions.filter(r => {
+            const rowDiff = Math.abs(r.getRow() - regionRow);
+            const colDiff = Math.abs(r.getColumn() - regionCol);
+
+            return (rowDiff <= 1 && colDiff <= 1) && r !== this;
+        });
+    }
+
+    /**
+     * Checks if the region has adjacent opponent regions.
+     * @returns {boolean} True if the region has adjacent opponent regions, otherwise false.
+     */
+    this.hasAdjacentOpponentRegions = function() {
+        const adjacentRegions = this.getAdjacentRegionsInContinent();
+        return adjacentRegions.some(adjRegion => adjRegion.getPlayer() !== this.getPlayer());
+    }
 }
 
 /**

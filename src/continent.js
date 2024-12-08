@@ -64,6 +64,11 @@ var Continent = function (row, col) {
         return playerRegionsInThisContinent;
     }
 
+    this.getPlayerBorderRegions = function(player) {
+        const playerRegions = this.getPlayerRegions(player);
+        return playerRegions.filter(region => region.hasAdjacentOpponentRegions());
+    }
+
     this.element = getContinentElement();
 
     /**

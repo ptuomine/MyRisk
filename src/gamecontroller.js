@@ -44,7 +44,6 @@ var GameController = {
         if (playerInTurn.isAI) {
             var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(playerInTurn, this);
             var battleActions = aiPlayer.executeTurn();
-            battleActions.forEach(action => action());
         }
 
         attackerSelection = null;
