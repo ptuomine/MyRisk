@@ -1,7 +1,6 @@
 var consts = require('./consts');
 var deck = require('./carddeck');
 var util = require('./util');
-var AIPlayerFactory = require('./aiplayer.js');
 
 /**
  * Represents a player in the game.
@@ -145,17 +144,12 @@ function player(id, name, color) {
     /**
      * Starts the player's turn and sets the draft count.
      */
-    this.startTurn = function () {
+    this.startTurn = function (gamecontroller) {
 
         // Set the draft count
         var regionpoints = state.regions.length < 3 ? state.regions.length / 3 : 3;
         var continentpoints = state.continents.reduce((a, b) => a + b.getContinentPoints(), 0);
         state.draft += regionpoints + continentpoints;
-
-        if (this.isAI) {
-            var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(this);
-            aiPlayer.executeTurn();
-        }
     }
 
     /**
@@ -283,8 +277,8 @@ var colors = consts.PLAYER_COLORS;
 var playerid = 0;
 
 /**
- * Factory object to create instances of players.
- */
+     * Factory object to create instances of players.
+     */
 var PlayerFactory = {
     /**
      * Creates and returns a new instance of a player.
