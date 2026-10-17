@@ -17,3 +17,12 @@ table, td, th {
     /*background-color: red;*/ /*Optional*/
 }
 
+
+/* While a computer player is moving, the board and turn buttons ignore taps */
+body.ai-turn #continentsArea {
+    pointer-events: none;
+}
+body.ai-turn #gamepanel button:not(#newgame) {
+    pointer-events: none;
+    opacity: 0.5;
+}

@@ -1,7 +1,6 @@
 var consts = require('./consts');
 var deck = require('./carddeck');
 var util = require('./util');
-var AIPlayerFactory = require('./aiplayer.js');
 
 /**
  * Represents a player in the game.
@@ -148,14 +147,10 @@ function player(id, name, color) {
     this.startTurn = function () {
 
         // Set the draft count
-        var regionpoints = state.regions.length < 3 ? state.regions.length / 3 : 3;
+        // Whole troops only: a fractional draft can never reach 0, which locked the buttons
+        var regionpoints = state.regions.length < 3 ? 0 : 3;
         var continentpoints = state.continents.reduce((a, b) => a + b.getContinentPoints(), 0);
         state.draft += regionpoints + continentpoints;
-
-        if (this.isAI) {
-            var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(this);
-            aiPlayer.executeTurn();
-        }
     }
 
     /**

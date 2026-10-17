@@ -31,6 +31,10 @@ The game is a turn-based strategy game where players compete to conquer territor
 
 - **File:** `src/aiplayer.js`
 - **Description:** Represents an AI player in the game and provides a factory to create instances of AI players.
+- **How it plays:** `src/main.js` starts a computer turn automatically whenever a player marked as AI is in turn, and ends the turn when it finishes. Because battles have no dice (an attack wins exactly when attacking troops - 1 > defending troops), the AI never makes a losing attack. Each turn it:
+  1. Trades cards for troops when it has a valid set.
+  2. Places troops one at a time on the region that best sets up a winning attack, valuing targets that complete a continent, break an enemy continent bonus or knock a player out. If no attack is in reach, it reinforces its most threatened border.
+  3. Attacks while it has winning attacks worth making. The first win earns a card; after that it stops when the remaining attacks would leave it too thin.
 
 ### Battle
 
