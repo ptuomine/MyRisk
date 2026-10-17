@@ -70,7 +70,10 @@ var TurnPanel = {
         var attack = gamecontroller.getAttackSelection();
         var defend = gamecontroller.getDefendSelection();
         el("gobattle").hidden = phase !== "attack" || !attack || !defend || aiTurn || gameOver;
-        el("sellcards").hidden = state.cards.length < 3 || aiTurn || gameOver;
+        var trade = player.getBestTrade();
+        var canTrade = !!trade && gamestate.getGameState() === gamestate.StartState && !aiTurn && !gameOver;
+        el("sellcards").hidden = !canTrade;
+        if (trade) el("sellcards").textContent = "Trade cards (+" + trade.troops + ")";
 
         // Hint
         var hint;
@@ -80,9 +83,11 @@ var TurnPanel = {
             hint = "Watch the map. Its moves are listed under Moves.";
         } else if (phase === "draft" && !draftDone) {
             hint = "Place " + state.draft + " more " + (state.draft === 1 ? "troop" : "troops") + ": tap your regions.";
-            if (state.cards.length >= 3) hint += " You can also trade cards for extra troops.";
+            if (canTrade) hint += " You can also trade cards for " + trade.troops + " more.";
         } else if (phase === "draft") {
-            hint = "All troops placed. Tap Attack, or Move, or End turn.";
+            hint = canTrade
+                ? "All troops placed. Trade cards for " + trade.troops + " more troops, or tap Attack, Move or End turn."
+                : "All troops placed. Tap Attack, or Move, or End turn.";
         } else if (phase === "attack") {
             if (!attack) hint = "Tap one of your regions to attack from. When you are done, tap Move or End turn.";
             else if (!defend) hint = attack.getName() + " selected (" + attack.getTroopCount() + " troops). Tap a lit-up enemy region.";
@@ -96,6 +101,10 @@ var TurnPanel = {
             hint = source
                 ? "Tap a lit-up region to move 1 troop from " + source.getName() + " per tap. Any of your regions connected through your own land or sea routes lights up. Tap " + source.getName() + " again to pick another region."
                 : "Tap a region to move troops from, or End turn.";
+        }
+        if (!aiTurn && !gameOver && state.cards.length) {
+            hint += " Your cards: " + state.cards.map(function (c) { return c.name; }).join(", ") + ".";
+            if (!trade && state.cards.length >= 3) hint += " (No set yet: you need 3 of a kind or one of each.)";
         }
         el("turnhint").textContent = hint;
     }

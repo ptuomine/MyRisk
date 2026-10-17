@@ -77,6 +77,13 @@ window.endTurn = function() {
  */
 window.sellCards = function() {
     if (aiRunning) return;
+    // Traded troops are placed in the draft step, so trading is only allowed then
+    if (gamestate.getGameState() !== gamestate.StartState) return;
+    var player = gamecontroller.getPlayerInTurn();
+    var trade = player && player.getBestTrade();
+    if (trade) {
+        logAIMove(player.getName() + " traded " + trade.cards.map(function(c) { return c.name; }).join(", ") + " for " + trade.troops + " troops");
+    }
     playerstats.sellCards();
     playerstats.updateStats();
 }

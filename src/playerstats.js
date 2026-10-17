@@ -94,7 +94,7 @@ var PlayerStats = {
             stat.regcol.innerText = stat.player.getState().regions.length;
             stat.troopcol.innerText = stat.player.getState().getTroopCount();
             stat.draftcol.innerText = stat.player.getState().draft;
-            stat.cardcol.innerText = stat.player.getState().cards.map(c=>c.display).join();
+            stat.cardcol.innerText = stat.player.getState().cards.map(c=>c.display).join(" ");
         });
 
         var nodraftleft = gamestats[currentplayer].player.getState().draft == 0;
@@ -102,7 +102,7 @@ var PlayerStats = {
         canvas.enablewar(nodraftleft && state == gamestate.StartState);
         canvas.enablefortify(nodraftleft && state != gamestate.FortifyState);
         canvas.enableendturn(nodraftleft);
-        canvas.enablesellcards(gamestats[currentplayer].player.getState().cards.length >= 3);
+        canvas.enablesellcards(state == gamestate.StartState && !!gamestats[currentplayer].player.getBestTrade());
         require('./turnpanel.js').update();
     },
     /**
