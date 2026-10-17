@@ -94,7 +94,7 @@ var TurnPanel = {
         } else if (phase === "move") {
             var source = gamecontroller.getMoveSource();
             hint = source
-                ? "Tap a lit-up region to move 1 troop from " + source.getName() + " per tap. Tap " + source.getName() + " again to pick another region."
+                ? "Tap a lit-up region to move 1 troop from " + source.getName() + " per tap. Any of your regions connected through your own land or sea routes lights up. Tap " + source.getName() + " again to pick another region."
                 : "Tap a region to move troops from, or End turn.";
         }
         el("turnhint").textContent = hint;

@@ -29,11 +29,12 @@ function clearTargets() {
 function showTargets(region, ownRegions) {
     clearTargets();
     if (!region) return;
-    region.getNeighbours().forEach(function(n) {
-        if (n.getPlayer().isSame(playerInTurn) === ownRegions) {
-            n.setTarget(true);
-            highlighted.push(n);
-        }
+    var targets = ownRegions
+        ? region.getConnectedOwnRegions() // moves can go anywhere through your own regions
+        : region.getNeighbours().filter(function(n) { return !n.getPlayer().isSame(playerInTurn); });
+    targets.forEach(function(n) {
+        n.setTarget(true);
+        highlighted.push(n);
     });
 }
 
@@ -88,7 +89,8 @@ var GameController = {
 
     /**
      * Handles a tap in the move phase. Tap one of your regions to pick it up,
-     * then tap a neighbouring region of yours to move one troop there per tap.
+     * then tap any of your regions connected to it through your own regions
+     * to move one troop there per tap.
      * Tap the picked region again to put it down.
      * @param {Object} region - The tapped region.
      */
@@ -101,7 +103,7 @@ var GameController = {
             clearTargets();
             return;
         }
-        if (moveSource && moveSource.canAttack(region)) {
+        if (moveSource && moveSource.getConnectedOwnRegions().indexOf(region) !== -1) {
             moveSource.moveTroopsTo(region, 1);
             playerstats.updateStats();
             return;

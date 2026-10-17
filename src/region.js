@@ -140,6 +140,27 @@ function region(data, contobj) {
     }
 
     /**
+     * Returns the other regions of the same owner that can be reached from here
+     * through an unbroken chain of that owner's regions (land borders or sea routes).
+     * Troops can be moved to any of them.
+     */
+    this.getConnectedOwnRegions = function() {
+        var seen = {};
+        seen[elementid] = true;
+        var queue = [this];
+        var found = [];
+        while (queue.length) {
+            queue.shift().getNeighbours().forEach(function (n) {
+                if (seen[n.id] || !n.getPlayer().isSame(occupant)) return;
+                seen[n.id] = true;
+                found.push(n);
+                queue.push(n);
+            });
+        }
+        return found;
+    }
+
+    /**
      * Initializes the region by resetting its state.
      */
     this.init = function() {

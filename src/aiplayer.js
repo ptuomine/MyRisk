@@ -11,7 +11,7 @@ var continentFactory = require('./continent.js');
  *   2. Place new troops one at a time, each on the region that best sets up
  *      a winning attack (or, if none is in reach, on its most threatened border).
  *   3. Attack while it has winning attacks worth making.
- *   4. Move troops from safe inner regions one step toward the front line.
+ *   4. Move troops from safe inner regions to the most threatened border region they connect to.
  */
 
 function allRegions() {
@@ -132,44 +132,35 @@ class AIPlayer {
     }
 
     /**
-     * Plans troop moves for the end of the turn. Each region with no enemy
-     * neighbours sends all but one troop to the neighbouring region of its own
-     * that is closest to an enemy (the most threatened one on a tie).
-     * Moves are planned from one snapshot, so troops travel one step per turn.
+     * Plans troop moves for the end of the turn. Troops in regions with no enemy
+     * neighbours go straight to a border region connected through the AI's own
+     * regions: the one where the enemy outnumbers it the most, counting troops
+     * already sent there this turn.
      * @returns {Array} list of { from, to, count }
      */
     planMoves(regions) {
         var self = this;
         var own = this.player.getState().regions.slice();
+        var sent = new Map();
 
-        // Distance (in steps through own regions) from each own region to the nearest enemy
-        var dist = new Map();
-        var queue = [];
-        own.forEach(function (r) {
-            if (self.enemyNeighbours(r, regions).length) { dist.set(r, 0); queue.push(r); }
-        });
-        while (queue.length) {
-            var r = queue.shift();
-            self.neighbours(r, own).forEach(function (n) {
-                if (!dist.has(n)) { dist.set(n, dist.get(r) + 1); queue.push(n); }
-            });
-        }
-
-        var threat = function (r) {
-            return self.enemyNeighbours(r, regions)
-                .reduce(function (m, e) { return Math.max(m, e.getTroopCount()); }, 0) - r.getTroopCount();
+        var shortfall = function (r) {
+            var strongest = self.enemyNeighbours(r, regions)
+                .reduce(function (m, e) { return Math.max(m, e.getTroopCount()); }, 0);
+            return strongest - r.getTroopCount() - (sent.get(r) || 0);
         };
 
         var moves = [];
         own.forEach(function (r) {
-            var d = dist.get(r);
-            if (d === undefined || d === 0 || r.getTroopCount() <= 1) return;
+            if (r.getTroopCount() <= 1 || self.enemyNeighbours(r, regions).length) return;
             var best = null;
-            self.neighbours(r, own).forEach(function (n) {
-                if (dist.get(n) !== d - 1) return;
-                if (!best || threat(n) > threat(best)) best = n;
+            r.getConnectedOwnRegions().forEach(function (n) {
+                if (!self.enemyNeighbours(n, regions).length) return;
+                if (!best || shortfall(n) > shortfall(best)) best = n;
             });
-            if (best) moves.push({ from: r, to: best, count: r.getTroopCount() - 1 });
+            if (!best) return;
+            var count = r.getTroopCount() - 1;
+            sent.set(best, (sent.get(best) || 0) + count);
+            moves.push({ from: r, to: best, count: count });
         });
         return moves;
     }
