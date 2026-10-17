@@ -5,6 +5,7 @@ var regionFactory = require('./region.js');
 var gamePlayers = require('./gameplayers.js');
 var gamecontroller = require('./gamecontroller.js');
 var util = require('./util.js');
+var mapdata = require('./mapdata.js');
 
 var regions = [];
 //var continents = [];
@@ -17,49 +18,17 @@ var GameBoard = {
 
         this.reset();
 
-        // Build game board
-        for (var row = 1; row <= consts.CONTINENT_ROWS; row++) {
-            canvas.addDivRow();
-            for (var col = 1; col <= consts.CONTINENT_COLUMNS; col++) {
-                var continent = buildContinent(row, col);
-//                continents.push(continent);
-            }
-        }
-
-        /**
-         * Builds a continent and its regions, and adds it to the game board.
-         * @param {number} cont_row - The row number of the continent.
-         * @param {number} cont_col - The column number of the continent.
-         * @returns {Object} The built continent object.
-         */
-        function buildContinent(cont_row, cont_col) {
-            var contobj = continentFactory.createContinentInstance(row, col);
-            buildRegions(row, col, contobj);
+        // Build the map from src/mapdata.js
+        canvas.createMap(mapdata);
+        mapdata.continents.forEach(function (contdata) {
+            var contobj = continentFactory.createContinentInstance(contdata);
+            contdata.regions.forEach(function (regiondata) {
+                var regobj = regionFactory.getRegionInstance(regiondata, contobj);
+                regions.push(regobj);
+                contobj.addRegion(regobj);
+            });
             canvas.addContinent(contobj);
-            return contobj;
-        }
-
-        /**
-         * Builds regions for a given continent and adds them to the continent object.
-         * @param {number} cont_row - The row number of the continent.
-         * @param {number} cont_col - The column number of the continent.
-         * @param {Object} contobj - The continent object to which the regions will be added.
-         */
-        function buildRegions(cont_row, cont_col, contobj) {
-
-            for (i = 1; i <= consts.CONTINENT_WIDTH; i++) {
-                for (j = 1; j <= consts.CONTINENT_HEIGHT; j++) {
-
-                    var regionrow = consts.CONTINENT_HEIGHT * (cont_row - 1) + i;
-                    var regioncol = consts.CONTINENT_WIDTH * (cont_col - 1) + j;
-
-                    var regobj = regionFactory.getRegionInstance(regionrow, regioncol, contobj);
-                    regions.push(regobj);
-                    contobj.addRegion(regobj);
-                }
-                contobj.addNewLine();
-            }
-        }
+        });
     },
     /**
      * Starts the game by setting up the initial game board and assigning troops to regions.

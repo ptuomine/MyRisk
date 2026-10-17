@@ -15,6 +15,28 @@ function isBattlePossible() {
     return attackerSelection && defenderSelection
 }
 
+var highlighted = []; // regions currently lit up as possible targets
+
+function clearTargets() {
+    highlighted.forEach(function(r) { r.setTarget(false); });
+    highlighted = [];
+}
+
+/**
+ * Lights up the regions bordering `region` that you can attack (enemy regions)
+ * or move troops to (your own regions).
+ */
+function showTargets(region, ownRegions) {
+    clearTargets();
+    if (!region) return;
+    region.getNeighbours().forEach(function(n) {
+        if (n.getPlayer().isSame(playerInTurn) === ownRegions) {
+            n.setTarget(true);
+            highlighted.push(n);
+        }
+    });
+}
+
 var GameController = {
 
     /**
@@ -32,6 +54,7 @@ var GameController = {
         attackerSelection = null;
         defenderSelection = null;
         moveSource = null;
+        clearTargets();
     },
 
     /**
@@ -47,6 +70,7 @@ var GameController = {
         attackerSelection = null;
         defenderSelection = null;
         moveSource = null;
+        clearTargets();
     },
 
     /**
@@ -58,6 +82,7 @@ var GameController = {
         attackerSelection = null;
         defenderSelection = null;
         moveSource = null;
+        clearTargets();
         canvas.enablebattle(false);
     },
 
@@ -73,6 +98,7 @@ var GameController = {
         if (moveSource && moveSource.isSame(region)) {
             moveSource.setSelection(false);
             moveSource = null;
+            clearTargets();
             return;
         }
         if (moveSource && moveSource.canAttack(region)) {
@@ -83,6 +109,7 @@ var GameController = {
         if (moveSource) moveSource.setSelection(false);
         moveSource = region;
         region.setSelection(true);
+        showTargets(region, true);
     },
 
     /**
@@ -103,6 +130,9 @@ var GameController = {
             // Selected false, i.e. deselection
             if (region.getPlayer().isSame(this.getPlayerInTurn())) {
                 attackerSelection = null;
+                if (defenderSelection) defenderSelection.setSelection(false);
+                defenderSelection = null;
+                clearTargets();
             } else {
                 defenderSelection = null;
             }
@@ -113,7 +143,10 @@ var GameController = {
         if (region.getPlayer().isSame(this.getPlayerInTurn())) {
             // Set the attacker
             if (attackerSelection) attackerSelection.setSelection(false); // deselect if already selected
+            if (defenderSelection) defenderSelection.setSelection(false);
+            defenderSelection = null;
             attackerSelection = region;
+            showTargets(region, false);
         } else if (attackerSelection){
             // Attacker already set. Set defender
             if (!attackerSelection.canAttack(region)) {
@@ -147,13 +180,16 @@ var GameController = {
             attackerSelection.setSelection(false);
             attackerSelection = defenderSelection;
             defenderSelection = null;
+            showTargets(attackerSelection, false);
         } else {
             // nothing selected
             attackerSelection.setSelection(false);
             defenderSelection.setSelection(false);
             attackerSelection = null;
             defenderSelection = null;
+            clearTargets();
         }
+        canvas.enablebattle(false);
     },
 }
 

@@ -8,7 +8,7 @@ The game is a turn-based strategy game where players compete to conquer territor
 
 ### Game Setup
 
-1. The game board is divided into continents, each containing multiple regions.
+1. The map has six continents of different sizes (3 to 5 regions, 24 regions in all). Regions border each other by land, and dashed sea routes connect continents. Holding a whole continent gives its bonus troops (shown next to its name) each turn.
 2. Players are assigned a color and start with a certain number of troops.
 3. Each player is randomly assigned regions on the game board.
 
@@ -45,7 +45,7 @@ The game is a turn-based strategy game where players compete to conquer territor
 ### Game Canvas
 
 - **File:** `src/canvas.js`
-- **Description:** Represents the game canvas where the game board is displayed and provides methods to interact with the canvas.
+- **Description:** Draws the map as an SVG picture (sea, sea routes, continents, and a top layer for region names) and enables or disables the action buttons.
 
 ### Card Deck
 
@@ -61,6 +61,11 @@ The game is a turn-based strategy game where players compete to conquer territor
 
 - **File:** `src/continent.js`
 - **Description:** Represents a continent in the game and provides methods to manage regions and determine the owner of the continent.
+
+### Map Data
+
+- **Files:** `src/mapdata.js` (generated), `tools/genmap.js` (generator)
+- **Description:** The continents, region shapes (SVG paths), region neighbours and sea routes. Do not edit `mapdata.js` by hand: change the continent list, names, bonuses or sea routes in `tools/genmap.js` and run `node tools/genmap.js`, then `npm run build`. The generator draws each continent as a blob-shaped landmass and splits it into regions around seed points (a Voronoi diagram), which gives regions of different sizes and shapes. It also checks that every region has a neighbour and that the whole map is connected.
 
 ### Game Board
 
@@ -100,7 +105,7 @@ The game is a turn-based strategy game where players compete to conquer territor
 ### Region
 
 - **File:** `src/region.js`
-- **Description:** Represents a region in the game and provides methods to manage troops, selection, and interactions with other regions.
+- **Description:** Represents a region on the map (an SVG shape with a troop badge and a name) and provides methods to manage troops, selection and target highlighting. `canAttack` checks the region's neighbour list from the map data; the same rule applies to moving troops.
 
 ### Utility
 

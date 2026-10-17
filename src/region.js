@@ -1,41 +1,78 @@
-var canvas = require('./canvas');
-var consts = require('./consts.js');
+var canvas = require('./canvas.js');
 var gamestate = require('./gamestate.js');
 var playerstats = require('./playerstats.js');
 var gamecontroller = require('./gamecontroller.js');
 
+var SVG_NS = "http://www.w3.org/2000/svg";
+
+var regionsById = {};
+
 /**
- * Represents a region in the game.
+ * Represents a region (territory) on the map.
  * @constructor
- * @param {number} row - The row number of the region.
- * @param {number} col - The column number of the region.
+ * @param {Object} data - The region's map data: id, name, path, label, neighbours.
  * @param {Object} contobj - The continent object to which the region belongs.
  */
-function region(row, col, contobj) {
-    var elementid = "region_" + row + "_" + col;
-    var row = row;
-    var col = col;
+function region(data, contobj) {
+    var elementid = data.id;
     var continent = contobj;
     var troopcount = 0;
     var occupant = null;
-    var element = getRegionElement();
     var selected = false;
     var self = this;
 
+    var shape, badge, countText;
+    var element = getRegionElement();
+
     /**
-     * Creates and returns the HTML element representing the region.
-     * @returns {HTMLElement} The region element.
+     * Creates the SVG group for the region: its shape, a troop badge and its name.
+     * @returns {SVGElement} The region element.
      */
     function getRegionElement() {
-        var reg = document.createElement("button");
-        reg.id = elementid;
-        reg.style.height = consts.REGION_HEIGHT + "px";
-        reg.style.width = consts.REGION_WIDTH + "px";
-        reg.style.color = "blue";
-        reg.innerText = troopcount;
-        reg.addEventListener("click", clickedbutton);
+        var g = document.createElementNS(SVG_NS, "g");
+        g.setAttribute("id", elementid);
+        g.setAttribute("class", "region");
+        g.setAttribute("role", "button");
+        g.setAttribute("tabindex", "0");
+        g.setAttribute("aria-label", data.name);
 
-        return reg;
+        shape = document.createElementNS(SVG_NS, "path");
+        shape.setAttribute("d", data.path);
+        shape.setAttribute("class", "region-shape");
+        g.appendChild(shape);
+
+        var x = data.label[0], y = data.label[1];
+
+        var name = document.createElementNS(SVG_NS, "text");
+        name.setAttribute("x", x);
+        name.setAttribute("y", y + 50);
+        name.setAttribute("class", "region-name");
+        name.textContent = data.name;
+        canvas.getLabelLayer().appendChild(name); // names sit above the whole map so none are covered
+
+        badge = document.createElementNS(SVG_NS, "circle");
+        badge.setAttribute("cx", x);
+        badge.setAttribute("cy", y);
+        badge.setAttribute("r", 28);
+        badge.setAttribute("class", "region-badge");
+        g.appendChild(badge);
+
+        countText = document.createElementNS(SVG_NS, "text");
+        countText.setAttribute("x", x);
+        countText.setAttribute("y", y);
+        countText.setAttribute("class", "region-count");
+        countText.textContent = troopcount;
+        g.appendChild(countText);
+
+        var title = document.createElementNS(SVG_NS, "title");
+        title.textContent = data.name + " (" + continent.getName() + ")";
+        g.appendChild(title);
+
+        g.addEventListener("click", clickedbutton);
+        g.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); clickedbutton(); }
+        });
+        return g;
     }
 
     /**
@@ -46,8 +83,7 @@ function region(row, col, contobj) {
 
         if (!occupant.reduceDraft()) return false; // no troops to reduce, so do nothing
 
-        troopcount++;
-        element.innerText = troopcount;
+        this.setTroopCount(troopcount + 1);
         playerstats.updateStats();
         return true;
     }
@@ -61,12 +97,9 @@ function region(row, col, contobj) {
     }
 
     /**
-     * Handles the click event on the region button.
+     * Handles a click or tap on the region.
      */
     function clickedbutton() {
-        console.log("coords: " + elementid);
-        console.log("row: " + continent.getRow() + ";col: " + continent.getColumn());
-
         switch (gamestate.getGameState()) {
             case gamestate.StartState: {
                 self.addTroops();
@@ -92,6 +125,20 @@ function region(row, col, contobj) {
     }
 
     /**
+     * Returns the region's name, e.g. "Frostgate".
+     */
+    this.getName = function() {
+        return data.name;
+    }
+
+    /**
+     * Returns the regions this region borders, by land or by sea route.
+     */
+    this.getNeighbours = function() {
+        return data.neighbours.map(function (id) { return regionsById[id]; });
+    }
+
+    /**
      * Initializes the region by resetting its state.
      */
     this.init = function() {
@@ -110,9 +157,7 @@ function region(row, col, contobj) {
      * Toggles the selection state of the region.
      */
     this.toggleSelection = function() {
-
-        selected = !selected;
-        this.setSelection(selected);
+        this.setSelection(!selected);
     }
 
     /**
@@ -121,27 +166,27 @@ function region(row, col, contobj) {
      */
     this.setSelection = function(selection) {
         selected = selection;
-        if (selected) {
-            element.style.border = "2px solid black";
-        } else {
-            element.style.border = "2px solid " + occupant.getColor();
+        element.classList.toggle("selected", selected);
+        if (selected && element.parentNode) {
+            element.parentNode.appendChild(element); // draw on top so the outline shows fully
         }
-    } 
+    }
 
     /**
-     * Updates the region's appearance based on the current game state.
+     * Marks the region as a possible target for the selected region.
+     * @param {boolean} on
+     */
+    this.setTarget = function(on) {
+        element.classList.toggle("target", !!on);
+    }
+
+    /**
+     * Updates the region's appearance when the game phase changes.
      */
     this.gameStateChange = function() {
-        switch (gamestate.getGameState()) {
-            case gamestate.StartState: {
-                element.style.border = "";
-                break;
-            }
-            case gamestate.BattleState:
-            case gamestate.FortifyState: {
-                element.style.border = "2px solid " + occupant.getColor();
-                break;
-            }
+        if (gamestate.getGameState() === gamestate.StartState) {
+            this.setSelection(false);
+            this.setTarget(false);
         }
     }
 
@@ -159,7 +204,7 @@ function region(row, col, contobj) {
      */
     this.setTroopCount = function (count) {
         troopcount = count;
-        this.element.innerText = count;
+        countText.textContent = count;
     }
 
     /**
@@ -192,11 +237,12 @@ function region(row, col, contobj) {
     }
 
     /**
-     * Resets the region by setting the troop count to zero and updating the game state.
+     * Resets the region by setting the troop count to zero and clearing highlights.
      */
     this.reset = function () {
         this.setTroopCount(0);
-        this.gameStateChange(gamestate.StartState);
+        this.setSelection(false);
+        this.setTarget(false);
     }
 
     /**
@@ -205,7 +251,7 @@ function region(row, col, contobj) {
      */
     this.setPlayer = function (player) {
         occupant = player;
-        this.element.style.backgroundColor = occupant.getColor();
+        shape.style.fill = occupant.getColor();
     }
 
     /**
@@ -234,36 +280,13 @@ function region(row, col, contobj) {
     }
 
     /**
-     * Returns the row number of the region.
-     * @returns {number} The row number of the region.
-     */
-    this.getRow = function() {
-        return row;
-    }
-
-    /**
-     * Returns the column number of the region.
-     * @returns {number} The column number of the region.
-     */
-    this.getColumn = function() {
-        return col;
-    }
-
-    /**
-     * Checks if the region can attack the given region.
-     * @param {Object} region - The region to be attacked.
-     * @returns {boolean} True if the region can attack, otherwise false.
+     * Checks if the region borders the given region (by land or sea route),
+     * which is what attacking and moving troops require.
+     * @param {Object} region - The other region.
+     * @returns {boolean} True if they border each other.
      */
     this.canAttack = function(region) {
-
-        var attackX = this.getRow();
-        var attackY = this.getColumn();
-        var defendX = region.getRow();
-        var defendY = region.getColumn();
-        
-        var can = defendX <= attackX + 1 && defendX >= attackX - 1;
-        can = can && defendY <= attackY + 1 && defendY >= attackY - 1;
-        return can;
+        return data.neighbours.indexOf(region.id) !== -1;
     }
 }
 
@@ -273,16 +296,19 @@ function region(row, col, contobj) {
 var RegionFactory = {
     /**
      * Creates and returns a new instance of a region.
-     * @param {number} row - The row number of the region.
-     * @param {number} col - The column number of the region.
+     * @param {Object} data - The region's map data.
      * @param {Object} contobj - The continent object to which the region belongs.
      * @returns {region} A new region instance.
      */
-    getRegionInstance: function (row, col, contobj) {
-        gamecontroller = gamecontroller;
-        var instance = new region(row, col, contobj);
+    getRegionInstance: function (data, contobj) {
+        var instance = new region(data, contobj);
         instance.init();
+        regionsById[data.id] = instance;
         return instance;
+    },
+
+    getRegionById: function (id) {
+        return regionsById[id];
     }
 
 };

@@ -21,3 +21,9 @@ Before you begin, ensure you have the following installed:
    npm run build (to build ones)
    
    npm run watch (to keep building when changes are made)
+
+## Change the map
+   The map lives in `src/mapdata.js`, which is generated. Edit `tools/genmap.js` (continents, names, bonuses, sea routes), then run:
+
+   node tools/genmap.js
+   npm run build

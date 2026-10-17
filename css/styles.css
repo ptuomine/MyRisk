@@ -6,18 +6,6 @@ table, td, th {
     background-color: lightgray;
 }
 
-.Row {
-    display: table;
-    width: 100%; /*Optional*/
-    table-layout: fixed; /*Optional*/
-    border-spacing: 10px; /*Optional*/
-}
-.Column {
-    display: table-cell;
-    /*background-color: red;*/ /*Optional*/
-}
-
-
 /* While a computer player is moving, the board and turn buttons ignore taps */
 body.ai-turn #continentsArea {
     pointer-events: none;
@@ -25,4 +13,106 @@ body.ai-turn #continentsArea {
 body.ai-turn #gamepanel button:not(#newgame) {
     pointer-events: none;
     opacity: 0.5;
+}
+
+/* ---- Map ----
+   Colours come from CSS variables so a page can theme the map; the values after
+   the comma are the defaults. */
+#continentsArea {
+    max-width: 640px;
+}
+.map-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.map-svg .sea {
+    fill: var(--map-sea, #cfe0ea);
+}
+.map-svg .sea-route {
+    stroke: var(--map-route, #5d7a8c);
+    stroke-width: 4;
+    stroke-dasharray: 12 9;
+    stroke-linecap: round;
+    pointer-events: none;
+}
+.map-svg .coast {
+    fill: var(--map-land, #e7e1cf);
+}
+.map-svg .coastline {
+    fill: none;
+    stroke: var(--map-ink, #26313c);
+    stroke-width: 5;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+.map-svg .continent-name {
+    fill: var(--map-ink, #26313c);
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-anchor: middle;
+    pointer-events: none;
+}
+.map-svg .region {
+    cursor: pointer;
+    outline: none;
+}
+.map-svg .region-shape {
+    fill: var(--map-land, #e7e1cf);
+    stroke: var(--map-border, rgba(38, 49, 60, 0.55));
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    transition: fill 0.25s ease;
+}
+.map-svg .region-name {
+    pointer-events: none;
+    fill: var(--map-ink, #26313c);
+    font-size: 20px;
+    font-weight: 600;
+    text-anchor: middle;
+    paint-order: stroke;
+    stroke: var(--map-halo, rgba(255, 255, 255, 0.75));
+    stroke-width: 4px;
+    stroke-linejoin: round;
+}
+.map-svg .region-badge {
+    fill: var(--map-badge, #ffffff);
+    stroke: var(--map-badge-ring, rgba(38, 49, 60, 0.35));
+    stroke-width: 2.5;
+}
+.map-svg .region-count {
+    fill: var(--map-badge-ink, #1a2128);
+    font-size: 32px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    font-variant-numeric: tabular-nums;
+}
+/* Selected region: thick dark outline */
+.map-svg .region.selected .region-shape {
+    stroke: var(--map-select, #111820);
+    stroke-width: 8;
+}
+/* Regions you can attack or move to from the selected region */
+.map-svg .region.target .region-shape {
+    stroke: var(--map-target, #ffffff);
+    stroke-width: 6;
+    stroke-dasharray: 14 8;
+    animation: target-march 1s linear infinite;
+}
+.map-svg .region:focus-visible .region-shape {
+    stroke: var(--map-select, #111820);
+    stroke-width: 6;
+}
+@keyframes target-march {
+    to { stroke-dashoffset: -22; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .map-svg .region.target .region-shape { animation: none; }
+    .map-svg .region-shape { transition: none; }
 }

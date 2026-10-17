@@ -21,7 +21,7 @@ function allRegions() {
 }
 
 function regionName(region) {
-    return "row " + region.getRow() + ", col " + region.getColumn();
+    return region.getName();
 }
 
 class AIPlayer {
