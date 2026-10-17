@@ -103,6 +103,7 @@ var PlayerStats = {
         canvas.enablefortify(nodraftleft && state != gamestate.FortifyState);
         canvas.enableendturn(nodraftleft);
         canvas.enablesellcards(gamestats[currentplayer].player.getState().cards.length >= 3);
+        require('./turnpanel.js').update();
     },
     /**
      * Advances to the next player and updates the active player in the player table.

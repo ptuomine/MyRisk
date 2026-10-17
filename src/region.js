@@ -114,6 +114,7 @@ function region(data, contobj) {
                 break;
             }
         }
+        require('./turnpanel.js').update();
     }
 
     this.element = element;

@@ -5,6 +5,7 @@ var playerstats = require('./playerstats.js');
 var gamestate = require('./gamestate.js');
 var deck = require('./carddeck.js');
 var AIPlayerFactory = require('./aiplayer.js');
+var turnpanel = require('./turnpanel.js');
 
 var AI_STEP_MS = 500; // pause between computer moves so they are easy to follow
 var MAX_LOG = 40;
@@ -110,6 +111,7 @@ function runAITurnIfNeeded() {
     var gameOver = gameplayers.getAlivePlayers().length <= 1;
     var aiTurn = !!(player && player.isAI && !gameOver);
     document.body.classList.toggle("ai-turn", aiTurn);
+    turnpanel.update();
     if (!aiTurn) return;
 
     aiRunning = true;

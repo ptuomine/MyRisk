@@ -107,6 +107,11 @@ The game is a turn-based strategy game where players compete to conquer territor
 - **File:** `src/region.js`
 - **Description:** Represents a region on the map (an SVG shape with a troop badge and a name) and provides methods to manage troops, selection and target highlighting. `canAttack` checks the region's neighbour list from the map data; the same rule applies to moving troops.
 
+### Turn Panel
+
+- **File:** `src/turnpanel.js`
+- **Description:** The bar above the map. It shows whose turn it is (in that player's colour, and whether a person or the computer is playing), a phase stepper (Draft → Attack → Move → End turn) with the current phase outlined and the usual next step highlighted, and a hint saying what to do next (for example "Place 4 more troops" or "Ulvik → Skarholm: 8 attacking vs 4 defending"). The Attack! button appears once both regions are picked; Trade cards appears when you have a set. It redraws whenever the stats or a selection change.
+
 ### Utility
 
 - **File:** `src/util.js`

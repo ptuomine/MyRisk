@@ -120,6 +120,21 @@ var GameController = {
         return playerInTurn;
     },
 
+    /** The region picked to attack from, or null. */
+    getAttackSelection: function() {
+        return attackerSelection || null;
+    },
+
+    /** The region picked to attack, or null. */
+    getDefendSelection: function() {
+        return defenderSelection || null;
+    },
+
+    /** The region picked to move troops from, or null. */
+    getMoveSource: function() {
+        return moveSource || null;
+    },
+
     /**
      * Sets the selected region for the current player. Handles selection and deselection of attacker and defender regions.
      * @param {Object} region - The region to be selected or deselected.

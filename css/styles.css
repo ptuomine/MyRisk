@@ -12,7 +12,144 @@ body.ai-turn #continentsArea {
 }
 body.ai-turn #gamepanel button:not(#newgame) {
     pointer-events: none;
+}
+body.ai-turn #phases, body.ai-turn .turn-actions {
     opacity: 0.5;
+}
+
+/* ---- Turn panel ----
+   Whose turn it is, the phase stepper and a hint. Colours are CSS variables
+   with defaults, like the map. --player-color is set by the game. */
+#gamepanel {
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.setup {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+}
+#turnpanel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--panel-bg, #f4f6f8);
+    background: color-mix(in srgb, var(--player-color, #888) 12%, var(--panel-bg, #f4f6f8));
+    border: 1px solid var(--panel-line, #d5dbe1);
+    border-top: 6px solid var(--player-color, #888);
+}
+#turnbanner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.turn-swatch {
+    width: 22px;
+    height: 22px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--player-color, #888);
+    box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.15);
+}
+.turn-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; line-height: 1.2; }
+#turnplayer { font-size: 1.3rem; font-weight: 700; }
+#turnrole { font-size: 0.9rem; color: var(--panel-muted, #5a6776); }
+body.ai-turn #turnrole::after {
+    content: "";
+    display: inline-block;
+    width: 8px; height: 8px; margin-left: 6px;
+    border-radius: 50%;
+    background: var(--player-color, #888);
+    animation: thinking 0.9s ease-in-out infinite alternate;
+}
+@keyframes thinking { from { opacity: 0.2; } to { opacity: 1; } }
+
+#phases {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.3fr;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: phase;
+}
+#phases li { display: flex; min-width: 0; }
+#phases .phase {
+    counter-increment: phase;
+    flex: 1;
+    min-width: 0;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 4px 3px;
+    border: 1px solid var(--panel-line, #d5dbe1);
+    background: var(--panel-step, #ffffff);
+    color: var(--panel-ink, #1c2631);
+    font: 600 0.9rem system-ui, sans-serif;
+    border-radius: 6px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+#phases .phase::before {
+    content: counter(phase);
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    background: var(--panel-line, #d5dbe1);
+    color: var(--panel-ink, #1c2631);
+}
+#phases span.phase { cursor: default; }
+#phases .phase:disabled { cursor: not-allowed; opacity: 0.45; }
+#phases .phase.done::before { content: "✓"; }
+#phases .phase.current,
+#phases .phase.current:disabled {
+    opacity: 1;
+    cursor: default;
+    border-color: var(--player-color, #888);
+    box-shadow: inset 0 0 0 2px var(--player-color, #888);
+    opacity: 1;
+}
+#phases .phase.next:not(:disabled) {
+    background: var(--panel-accent, #2e4f7d);
+    border-color: var(--panel-accent, #2e4f7d);
+    color: var(--panel-accent-ink, #ffffff);
+}
+#phases .phase.next:not(:disabled)::before {
+    background: rgba(255, 255, 255, 0.25);
+    color: inherit;
+}
+#turnhint { margin: 0; font-size: 0.9rem; line-height: 1.35; }
+.turn-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.turn-actions:not(:has(button:not([hidden]))) { display: none; }
+.turn-actions button {
+    min-height: 44px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font: 600 1rem system-ui, sans-serif;
+    border: 1px solid var(--panel-line, #d5dbe1);
+    background: var(--panel-step, #ffffff);
+    color: var(--panel-ink, #1c2631);
+    cursor: pointer;
+}
+.turn-actions button.primary {
+    background: var(--panel-danger, #b23a24);
+    border-color: var(--panel-danger, #b23a24);
+    color: #ffffff;
+}
+.turn-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+    body.ai-turn #turnrole::after { animation: none; }
 }
 
 /* ---- Map ----
