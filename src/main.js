@@ -28,6 +28,7 @@ window.resetGameBoard = function() {
     playerstats.updateStats();
     deck.init();
 
+    logReinforcements();
     runAITurnIfNeeded();
 }
 
@@ -83,7 +84,21 @@ function advanceTurn() {
     gamestate.setGameState(gamestate.StartState);
     gameboard.nextTurn();
     playerstats.updateStats();
+    if (gameplayers.getAlivePlayers().length > 1) logReinforcements();
     runAITurnIfNeeded();
+}
+
+/**
+ * Logs where the player in turn got their new troops, e.g.
+ * "player1 gets 7 troops: 4 for 8 regions + 3 for Nordhavn".
+ */
+function logReinforcements() {
+    var player = gamecontroller.getPlayerInTurn();
+    if (!player) return;
+    var r = player.getReinforcements();
+    var parts = [r.regionTroops + " for " + r.regions + " regions"];
+    r.continents.forEach(function(c) { parts.push(c.bonus + " for " + c.name); });
+    logAIMove(player.getName() + " gets " + r.total + " troops: " + parts.join(" + "));
 }
 
 /**
@@ -152,4 +167,5 @@ deck.init();
 gameboard.startGame();
 playerstats.resetAndStartTurn();
 playerstats.updateStats();
+logReinforcements();
 runAITurnIfNeeded();

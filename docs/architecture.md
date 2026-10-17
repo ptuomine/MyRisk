@@ -20,7 +20,7 @@ The game is a turn-based strategy game where players compete to conquer territor
 ### How the Game is Played
 
 1. **Initial Troop Placement:** Players take turns placing their initial troops on their assigned regions.
-2. **Draft Phase:** At the beginning of each turn, players receive additional troops based on the number of regions and continents they control.
+2. **Draft Phase:** At the beginning of each turn, players receive new troops: 1 for every 2 regions they own (rounded down, at least 3), plus the bonus of every continent they hold in full. The move list shows the breakdown, e.g. "player1 gets 7 troops: 4 for 8 regions + 3 for Nordhavn". The numbers are `REGIONS_PER_TROOP` and `MIN_REINFORCEMENTS` in `src/consts.js`.
 3. **Attack Phase:** Players can attack adjacent regions controlled by other players. Battles are resolved using the `src/battle.js` logic.
 4. **Move Phase:** After attacking (or instead of attacking), press **Move Troops**. Tap one of your regions, then tap a neighbouring region of yours to move one troop per tap; tap the first region again to put it down. At least one troop always stays behind. No more attacks are allowed after moving.
 5. **End Turn:** The turn ends, and the next player takes their turn.

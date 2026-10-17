@@ -13,6 +13,10 @@ var player_colors = ['#00af9d','#ffb652','#cd66cc','#66bc29','#0096db','#3a7dda'
 var total_regions = mapdata.continents.reduce((n, c) => n + c.regions.length, 0);
 var total_troops_each = Math.floor(total_regions * 1.25); // whole troops only
 
+// Reinforcements each turn: 1 troop per REGIONS_PER_TROOP regions owned, never fewer than MIN_REINFORCEMENTS
+var regions_per_troop = 2;
+var min_reinforcements = 3;
+
 var gamestats = ["player", "continents", "regions", "troops", "drafts", "cards"];
 
 var exports = module.exports = {};
@@ -21,5 +25,7 @@ exports.PLAYERS = players;
 exports.NOPLAYER = noplayer;
 exports.PLAYER_COLORS = player_colors;
 exports.TOTAL_TROOPS_EACH = total_troops_each;
+exports.REGIONS_PER_TROOP = regions_per_troop;
+exports.MIN_REINFORCEMENTS = min_reinforcements;
 exports.PLAYER_COUNT = player_count;
 exports.GAMESTATS_HEADINGS = gamestats;

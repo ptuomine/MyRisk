@@ -145,12 +145,19 @@ function player(id, name, color) {
      * Starts the player's turn and sets the draft count.
      */
     this.startTurn = function () {
+        state.draft += this.getReinforcements().total;
+    }
 
-        // Set the draft count
-        // Whole troops only: a fractional draft can never reach 0, which locked the buttons
-        var regionpoints = state.regions.length < 3 ? 0 : 3;
-        var continentpoints = state.continents.reduce((a, b) => a + b.getContinentPoints(), 0);
-        state.draft += regionpoints + continentpoints;
+    /**
+     * New troops at the start of a turn: 1 for every 2 regions owned (at least 3),
+     * plus the bonus of every continent held in full.
+     * @returns {{regions: number, regionTroops: number, continents: Array, total: number}}
+     */
+    this.getReinforcements = function () {
+        var regionTroops = Math.max(consts.MIN_REINFORCEMENTS, Math.floor(state.regions.length / consts.REGIONS_PER_TROOP));
+        var continents = state.continents.map(c => ({ name: c.getName(), bonus: c.getContinentPoints() }));
+        var total = regionTroops + continents.reduce((a, c) => a + c.bonus, 0);
+        return { regions: state.regions.length, regionTroops: regionTroops, continents: continents, total: total };
     }
 
     /**
