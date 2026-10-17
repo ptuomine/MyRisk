@@ -48,7 +48,12 @@ var GameState = {
     /**
      * Represents the battle state of the game.
      */
-    BattleState: "Battle"
+    BattleState: "Battle",
+
+    /**
+     * Represents the move (fortify) state: the player moves troops between their own regions.
+     */
+    FortifyState: "Fortify"
 }
 
 module.exports = GameState;

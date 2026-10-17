@@ -8,6 +8,7 @@ var startwarel = document.getElementById("startwar");
 var gobattleel = document.getElementById("gobattle");
 var endturnel = document.getElementById("endturn");
 var sellcardsel = document.getElementById("sellcards");
+var fortifyel = document.getElementById("fortify");
 
 var GameCanvas = {
 
@@ -36,6 +37,15 @@ var GameCanvas = {
         endturnel.disabled = true;
         gobattleel.disabled = true;
         sellcardsel.disabled = true;
+        if (fortifyel) fortifyel.disabled = true;
+    },
+
+    /**
+     * Enables or disables the "Move Troops" button.
+     * @param {boolean} enable - Whether to enable or disable the button.
+     */
+    enablefortify: function(enable) {
+        if (fortifyel) fortifyel.disabled = !enable;
     },
 
     /**

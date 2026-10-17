@@ -38,6 +38,7 @@ window.startWar = function() {
     if (aiRunning) return;
     gamestate.setGameState(gamestate.BattleState);
     gameboard.startWar();
+    playerstats.updateStats();
 }
 
 /**
@@ -46,6 +47,18 @@ window.startWar = function() {
 window.goBattle = function() {
     if (aiRunning) return;
     gameboard.goBattle();
+    playerstats.updateStats();
+}
+
+/**
+ * Starts the move phase: the player can move troops between their own neighbouring regions.
+ * No more attacks this turn.
+ */
+window.moveTroops = function() {
+    if (aiRunning) return;
+    gamestate.setGameState(gamestate.FortifyState);
+    gamecontroller.startMovePhase();
+    gameboard.startWar(); // refreshes region borders for the new phase
     playerstats.updateStats();
 }
 

@@ -4,6 +4,7 @@ var canvas = require('./canvas');
 
 var attackerSelection;
 var defenderSelection;
+var moveSource; // region troops are moved from in the move phase
 var playerInTurn;
 
 /**
@@ -30,6 +31,7 @@ var GameController = {
         playerInTurn = playerstats.getFirstPlayer();
         attackerSelection = null;
         defenderSelection = null;
+        moveSource = null;
     },
 
     /**
@@ -44,6 +46,43 @@ var GameController = {
 
         attackerSelection = null;
         defenderSelection = null;
+        moveSource = null;
+    },
+
+    /**
+     * Starts the move phase: clears any attack selection.
+     */
+    startMovePhase: function() {
+        if (attackerSelection) attackerSelection.setSelection(false);
+        if (defenderSelection) defenderSelection.setSelection(false);
+        attackerSelection = null;
+        defenderSelection = null;
+        moveSource = null;
+        canvas.enablebattle(false);
+    },
+
+    /**
+     * Handles a tap in the move phase. Tap one of your regions to pick it up,
+     * then tap a neighbouring region of yours to move one troop there per tap.
+     * Tap the picked region again to put it down.
+     * @param {Object} region - The tapped region.
+     */
+    moveTroopClick: function(region) {
+        if (!region.getPlayer().isSame(playerInTurn)) return;
+
+        if (moveSource && moveSource.isSame(region)) {
+            moveSource.setSelection(false);
+            moveSource = null;
+            return;
+        }
+        if (moveSource && moveSource.canAttack(region)) {
+            moveSource.moveTroopsTo(region, 1);
+            playerstats.updateStats();
+            return;
+        }
+        if (moveSource) moveSource.setSelection(false);
+        moveSource = region;
+        region.setSelection(true);
     },
 
     /**

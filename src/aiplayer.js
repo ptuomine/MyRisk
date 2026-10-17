@@ -11,6 +11,7 @@ var continentFactory = require('./continent.js');
  *   2. Place new troops one at a time, each on the region that best sets up
  *      a winning attack (or, if none is in reach, on its most threatened border).
  *   3. Attack while it has winning attacks worth making.
+ *   4. Move troops from safe inner regions one step toward the front line.
  */
 
 function allRegions() {
@@ -131,6 +132,49 @@ class AIPlayer {
     }
 
     /**
+     * Plans troop moves for the end of the turn. Each region with no enemy
+     * neighbours sends all but one troop to the neighbouring region of its own
+     * that is closest to an enemy (the most threatened one on a tie).
+     * Moves are planned from one snapshot, so troops travel one step per turn.
+     * @returns {Array} list of { from, to, count }
+     */
+    planMoves(regions) {
+        var self = this;
+        var own = this.player.getState().regions.slice();
+
+        // Distance (in steps through own regions) from each own region to the nearest enemy
+        var dist = new Map();
+        var queue = [];
+        own.forEach(function (r) {
+            if (self.enemyNeighbours(r, regions).length) { dist.set(r, 0); queue.push(r); }
+        });
+        while (queue.length) {
+            var r = queue.shift();
+            self.neighbours(r, own).forEach(function (n) {
+                if (!dist.has(n)) { dist.set(n, dist.get(r) + 1); queue.push(n); }
+            });
+        }
+
+        var threat = function (r) {
+            return self.enemyNeighbours(r, regions)
+                .reduce(function (m, e) { return Math.max(m, e.getTroopCount()); }, 0) - r.getTroopCount();
+        };
+
+        var moves = [];
+        own.forEach(function (r) {
+            var d = dist.get(r);
+            if (d === undefined || d === 0 || r.getTroopCount() <= 1) return;
+            var best = null;
+            self.neighbours(r, own).forEach(function (n) {
+                if (dist.get(n) !== d - 1) return;
+                if (!best || threat(n) > threat(best)) best = n;
+            });
+            if (best) moves.push({ from: r, to: best, count: r.getTroopCount() - 1 });
+        });
+        return moves;
+    }
+
+    /**
      * Plays a full turn. Steps are spaced out by `opts.delay` so a person can follow.
      * @param {Object} opts
      * @param {function(number): Promise} opts.delay - waits the given milliseconds
@@ -192,6 +236,17 @@ class AIPlayer {
         }
 
         if (conquered === 0) opts.log(name + " held its positions");
+
+        // 4. Move troops toward the front
+        var moves = this.planMoves(regions);
+        if (moves.length) {
+            moves.forEach(function (m) {
+                var moved = m.from.moveTroopsTo(m.to, m.count);
+                if (moved) opts.log(name + " moved " + moved + " from " + regionName(m.from) + " to " + regionName(m.to));
+            });
+            opts.onChange();
+            await opts.delay(opts.stepMs);
+        }
     }
 }
 

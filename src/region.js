@@ -76,6 +76,10 @@ function region(row, col, contobj) {
                 selectregion();
                 break;
             }
+            case gamestate.FortifyState: {
+                gamecontroller.moveTroopClick(self);
+                break;
+            }
         }
     }
 
@@ -133,7 +137,8 @@ function region(row, col, contobj) {
                 element.style.border = "";
                 break;
             }
-            case gamestate.BattleState: {
+            case gamestate.BattleState:
+            case gamestate.FortifyState: {
                 element.style.border = "2px solid " + occupant.getColor();
                 break;
             }
@@ -155,6 +160,20 @@ function region(row, col, contobj) {
     this.setTroopCount = function (count) {
         troopcount = count;
         this.element.innerText = count;
+    }
+
+    /**
+     * Moves troops from this region to another region. At least one troop always stays behind.
+     * @param {Object} target - The region receiving the troops.
+     * @param {number} count - How many troops to move.
+     * @returns {number} The number of troops actually moved.
+     */
+    this.moveTroopsTo = function (target, count) {
+        var moved = Math.max(0, Math.min(count, troopcount - 1));
+        if (moved === 0) return 0;
+        this.setTroopCount(troopcount - moved);
+        target.setTroopCount(target.getTroopCount() + moved);
+        return moved;
     }
 
     /**

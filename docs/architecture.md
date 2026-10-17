@@ -22,7 +22,7 @@ The game is a turn-based strategy game where players compete to conquer territor
 1. **Initial Troop Placement:** Players take turns placing their initial troops on their assigned regions.
 2. **Draft Phase:** At the beginning of each turn, players receive additional troops based on the number of regions and continents they control.
 3. **Attack Phase:** Players can attack adjacent regions controlled by other players. Battles are resolved using the `src/battle.js` logic.
-4. **Fortify Phase:** Players can move troops between their own adjacent regions.
+4. **Move Phase:** After attacking (or instead of attacking), press **Move Troops**. Tap one of your regions, then tap a neighbouring region of yours to move one troop per tap; tap the first region again to put it down. At least one troop always stays behind. No more attacks are allowed after moving.
 5. **End Turn:** The turn ends, and the next player takes their turn.
 
 ## Components
@@ -35,6 +35,7 @@ The game is a turn-based strategy game where players compete to conquer territor
   1. Trades cards for troops when it has a valid set.
   2. Places troops one at a time on the region that best sets up a winning attack, valuing targets that complete a continent, break an enemy continent bonus or knock a player out. If no attack is in reach, it reinforces its most threatened border.
   3. Attacks while it has winning attacks worth making. The first win earns a card; after that it stops when the remaining attacks would leave it too thin.
+  4. Moves troops from inner regions (no enemy neighbours) one step toward the front line.
 
 ### Battle
 

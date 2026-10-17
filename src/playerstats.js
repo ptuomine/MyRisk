@@ -1,6 +1,7 @@
 var consts = require('./consts');
 var gameplayers = require('./gameplayers');
 var canvas = require('./canvas');
+var gamestate = require('./gamestate');
 var currentplayer = 0;
 
 var gamestats = [];
@@ -97,7 +98,9 @@ var PlayerStats = {
         });
 
         var nodraftleft = gamestats[currentplayer].player.getState().draft == 0;
-        canvas.enablewar(nodraftleft);
+        var state = gamestate.getGameState();
+        canvas.enablewar(nodraftleft && state == gamestate.StartState);
+        canvas.enablefortify(nodraftleft && state != gamestate.FortifyState);
         canvas.enableendturn(nodraftleft);
         canvas.enablesellcards(gamestats[currentplayer].player.getState().cards.length >= 3);
     },
