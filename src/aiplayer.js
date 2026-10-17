@@ -174,23 +174,28 @@ class AIPlayer {
      * @param {function(string)} opts.log - records a move for the move list
      * @param {number} opts.stepMs - pause between steps
      */
-    async playTurn(opts) {
-        var player = this.player;
-        var name = player.getName();
-        var regions = allRegions();
-        var state = player.getState();
-
-        // 1. Trade cards
-        if (state.cards.length >= 3) {
-            var before = state.draft;
-            player.sellCards();
-            if (state.draft > before) {
-                opts.log(name + " traded cards for " + (state.draft - before) + " troops");
-                opts.onChange();
-            }
+    /**
+     * Trades the best set of cards while it has one.
+     * @returns {boolean} true if it traded
+     */
+    tradeCards(opts) {
+        var traded = false;
+        var trade;
+        while ((trade = this.player.getBestTrade())) {
+            this.player.sellCards();
+            opts.log(this.player.getName() + " traded " + trade.cards.map(function (c) { return c.name; }).join(", ") + " for " + trade.troops + " troops");
+            traded = true;
         }
+        if (traded) opts.onChange();
+        return traded;
+    }
 
-        // 2. Draft
+    /**
+     * Places all troops waiting to be placed, one at a time where they help most.
+     */
+    placeDraft(regions, opts) {
+        var name = this.player.getName();
+        var state = this.player.getState();
         var placed = new Map();
         while (state.draft >= 1) {
             var target = this.draftTarget(Math.floor(state.draft), regions);
@@ -201,6 +206,17 @@ class AIPlayer {
             opts.log(name + " placed " + count + " at " + regionName(region));
         });
         opts.onChange();
+    }
+
+    async playTurn(opts) {
+        var player = this.player;
+        var name = player.getName();
+        var regions = allRegions();
+        var state = player.getState();
+
+        // 1. Trade cards, 2. Draft
+        this.tradeCards(opts);
+        this.placeDraft(regions, opts);
 
         await opts.delay(opts.stepMs);
         if (opts.isCancelled()) return;
@@ -219,6 +235,14 @@ class AIPlayer {
             if (!battle.go(move.attacker, move.defender)) break; // cannot happen: only winning attacks are chosen
             conquered++;
             opts.log(name + " took " + to + " from " + loser + " (attacked from " + from + ")");
+
+            // Knocked a player out: their cards are ours, trade them and place the troops now
+            if (state.lastElimination) {
+                var e = state.lastElimination;
+                state.lastElimination = null;
+                opts.log(name + " knocked out " + e.loser + " and took " + e.cards + " " + (e.cards === 1 ? "card" : "cards"));
+                if (this.tradeCards(opts)) this.placeDraft(regions, opts);
+            }
             opts.onChange();
 
             await opts.delay(opts.stepMs);

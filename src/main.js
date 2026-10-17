@@ -49,7 +49,18 @@ window.startWar = function() {
 window.goBattle = function() {
     if (aiRunning) return;
     gameboard.goBattle();
+    logElimination(gamecontroller.getPlayerInTurn());
     playerstats.updateStats();
+}
+
+/**
+ * Logs a knock-out and the cards taken, once.
+ */
+function logElimination(player) {
+    var e = player && player.getState().lastElimination;
+    if (!e) return;
+    player.getState().lastElimination = null;
+    logAIMove(player.getName() + " knocked out " + e.loser + " and took " + e.cards + " " + (e.cards === 1 ? "card" : "cards"));
 }
 
 /**
@@ -77,14 +88,19 @@ window.endTurn = function() {
  */
 window.sellCards = function() {
     if (aiRunning) return;
-    // Traded troops are placed in the draft step, so trading is only allowed then
-    if (gamestate.getGameState() !== gamestate.StartState) return;
+    // Allowed in the Draft step, or mid-attack right after knocking a player out
     var player = gamecontroller.getPlayerInTurn();
-    var trade = player && player.getBestTrade();
-    if (trade) {
-        logAIMove(player.getName() + " traded " + trade.cards.map(function(c) { return c.name; }).join(", ") + " for " + trade.troops + " troops");
-    }
+    if (!player || !player.canTradeNow()) return;
+    var trade = player.getBestTrade();
+    logAIMove(player.getName() + " traded " + trade.cards.map(function(c) { return c.name; }).join(", ") + " for " + trade.troops + " troops");
     playerstats.sellCards();
+
+    if (gamestate.getGameState() !== gamestate.StartState) {
+        // Mid-attack: go back to placing troops; tapping Attack afterwards continues the attack
+        gamestate.setGameState(gamestate.StartState);
+        gamecontroller.clearSelections();
+        gameboard.startWar(); // refreshes region borders for the new phase
+    }
     playerstats.updateStats();
 }
 

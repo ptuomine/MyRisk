@@ -75,6 +75,13 @@ var GameController = {
     },
 
     /**
+     * Clears any picked regions and highlights (e.g. when going back to place traded troops).
+     */
+    clearSelections: function() {
+        this.startMovePhase();
+    },
+
+    /**
      * Starts the move phase: clears any attack selection.
      */
     startMovePhase: function() {

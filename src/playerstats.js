@@ -102,7 +102,7 @@ var PlayerStats = {
         canvas.enablewar(nodraftleft && state == gamestate.StartState);
         canvas.enablefortify(nodraftleft && state != gamestate.FortifyState);
         canvas.enableendturn(nodraftleft);
-        canvas.enablesellcards(state == gamestate.StartState && !!gamestats[currentplayer].player.getBestTrade());
+        canvas.enablesellcards(gamestats[currentplayer].player.canTradeNow());
         require('./turnpanel.js').update();
     },
     /**

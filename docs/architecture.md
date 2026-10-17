@@ -51,7 +51,7 @@ The game is a turn-based strategy game where players compete to conquer territor
 
 - **File:** `src/carddeck.js`
 - **Description:** Represents the card deck used in the game and provides methods to initialize, draw, and check cards.
-- **Trading:** You earn a card at the end of any turn in which you conquered a region. In the Draft step you can trade a set of 3 cards for extra troops: three of a kind, or one of each type (Infantry 2, Cavalry 3, Artillery 4 points; a Wild card stands in for any type). The set is worth the sum of its points. `Player.getBestTrade()` tries every combination of 3 cards and picks the most valuable set.
+- **Trading:** You earn a card at the end of any turn in which you conquered a region. In the Draft step you can trade a set of 3 cards for extra troops: three of a kind, or one of each type (Infantry 2, Cavalry 3, Artillery 4 points; a Wild card stands in for any type). The set is worth the sum of its points. `Player.getBestTrade()` tries every combination of 3 cards and picks the most valuable set. When you knock a player out, you take all their cards. If that gives you a set, you can trade straight away, even in the middle of attacking: trading takes you back to the Draft step to place the troops, then tap Attack to keep going. Computer players do the same.
 
 ### Constants
 

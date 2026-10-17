@@ -30,6 +30,11 @@ var Battle = {
             defendingplayer.removeRegion(regionDefense);
             attackingplayer.cardEarned();
 
+            // Knocked out: the attacker takes all of the loser's cards
+            if (defendingplayer.isDead()) {
+                attackingplayer.takeCardsFrom(defendingplayer);
+            }
+
             // Check continent
             var continent = regionDefense.getContinent();
             continent.checkContinentOwner();

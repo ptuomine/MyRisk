@@ -71,7 +71,7 @@ var TurnPanel = {
         var defend = gamecontroller.getDefendSelection();
         el("gobattle").hidden = phase !== "attack" || !attack || !defend || aiTurn || gameOver;
         var trade = player.getBestTrade();
-        var canTrade = !!trade && gamestate.getGameState() === gamestate.StartState && !aiTurn && !gameOver;
+        var canTrade = player.canTradeNow() && !aiTurn && !gameOver;
         el("sellcards").hidden = !canTrade;
         if (trade) el("sellcards").textContent = "Trade cards (+" + trade.troops + ")";
 
@@ -84,10 +84,14 @@ var TurnPanel = {
         } else if (phase === "draft" && !draftDone) {
             hint = "Place " + state.draft + " more " + (state.draft === 1 ? "troop" : "troops") + ": tap your regions.";
             if (canTrade) hint += " You can also trade cards for " + trade.troops + " more.";
+            if (state.tookCards) hint += " Then tap Attack to keep attacking.";
         } else if (phase === "draft") {
             hint = canTrade
                 ? "All troops placed. Trade cards for " + trade.troops + " more troops, or tap Attack, Move or End turn."
                 : "All troops placed. Tap Attack, or Move, or End turn.";
+        } else if (phase === "attack" && canTrade) {
+            hint = "You knocked out " + state.tookCardsFrom.replace(/^player(\d+)$/, "Player $1") + " and took their cards. "
+                + "Trade cards now for " + trade.troops + " troops to place, or keep attacking.";
         } else if (phase === "attack") {
             if (!attack) hint = "Tap one of your regions to attack from. When you are done, tap Move or End turn.";
             else if (!defend) hint = attack.getName() + " selected (" + attack.getTroopCount() + " troops). Tap a lit-up enemy region.";

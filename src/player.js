@@ -1,6 +1,7 @@
 var consts = require('./consts');
 var deck = require('./carddeck');
 var util = require('./util');
+var gamestate = require('./gamestate');
 
 /**
  * Represents a player in the game.
@@ -32,6 +33,8 @@ function player(id, name, color) {
         };
         state.cards = [];
         state.draft = consts.TOTAL_TROOPS_EACH;
+        state.tookCards = false;      // knocked a player out this turn and took their cards
+        state.lastElimination = null; // { loser, cards } until the move list has shown it
         cardEarned = false;
     }
 
@@ -145,7 +148,32 @@ function player(id, name, color) {
      * Starts the player's turn and sets the draft count.
      */
     this.startTurn = function () {
+        state.tookCards = false;
         state.draft += this.getReinforcements().total;
+    }
+
+    /**
+     * Takes all cards from a player this player has just knocked out.
+     * Those cards can be traded straight away, even in the middle of attacking.
+     * @param {Object} loser - The eliminated player.
+     */
+    this.takeCardsFrom = function (loser) {
+        var taken = loser.getState().cards;
+        loser.getState().cards = [];
+        state.cards = state.cards.concat(taken);
+        state.tookCards = true;
+        state.tookCardsFrom = loser.getName();
+        state.lastElimination = { loser: loser.getName(), cards: taken.length };
+    }
+
+    /**
+     * Whether the player may trade cards right now: in the Draft step, or while
+     * attacking right after knocking a player out and taking their cards.
+     */
+    this.canTradeNow = function () {
+        if (!this.getBestTrade()) return false;
+        var phase = gamestate.getGameState();
+        return phase === gamestate.StartState || (phase === gamestate.BattleState && state.tookCards);
     }
 
     /**
@@ -228,8 +256,8 @@ function setValue(set, types) {
     if (util.isAllUnique(ids)) {
         // one of each: wilds take the missing types, best points first
         var missing = types.filter(t => ids.indexOf(t.id) === -1).slice(0, wilds);
-        var allSame = real.length > 0 && wilds > 0
-            ? real[0].points * 3 // e.g. artillery + 2 wilds can also count as three artillery
+        var allSame = real.length === 1
+            ? real[0].points * 3 // one real card + 2 wilds can also count as three of that card
             : 0;
         return Math.max(realPoints + missing.reduce((a, t) => a + t.points, 0), allSame);
     }
