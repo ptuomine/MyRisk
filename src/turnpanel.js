@@ -41,9 +41,12 @@ var TurnPanel = {
         var who = gameOver ? displayName(alive[0]) : displayName(player);
         el("turnpanel").style.setProperty("--player-color", (gameOver ? alive[0] : player).getColor());
         el("turnplayer").textContent = gameOver ? who + " has won" : who;
+        var levelSelect = el("difficulty");
+        var level = levelSelect ? levelSelect.options[levelSelect.selectedIndex].text : "";
+        var computer = "Computer" + (level ? " (" + level + ")" : "");
         el("turnrole").textContent = gameOver ? "Game over"
-            : aiTurn ? "Computer is playing…"
-            : player.isAI ? "Computer" : "Your turn";
+            : aiTurn ? computer + " is playing…"
+            : player.isAI ? computer : "Your turn";
 
         // Phase stepper
         var phase = state.draft > 0 ? "draft"

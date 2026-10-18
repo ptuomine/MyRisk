@@ -10,6 +10,28 @@ var turnpanel = require('./turnpanel.js');
 var AI_STEP_MS = 500; // pause between computer moves so they are easy to follow
 var MAX_LOG = 40;
 
+/**
+ * The computer level chosen on the page: "easy", "normal" or "hard".
+ * Remembered in this browser between visits.
+ */
+function getLevel() {
+    var select = document.getElementById("difficulty");
+    return select ? select.value : "normal";
+}
+
+(function rememberLevel() {
+    var select = document.getElementById("difficulty");
+    if (!select) return;
+    try {
+        var saved = localStorage.getItem("myrisk-level");
+        if (saved && AIPlayerFactory.LEVELS[saved]) select.value = saved;
+    } catch (e) { /* storage unavailable: use the default */ }
+    select.addEventListener("change", function() {
+        try { localStorage.setItem("myrisk-level", select.value); } catch (e) { /* ignore */ }
+        turnpanel.update();
+    });
+})();
+
 var gameToken = 0;    // changes on New Game, cancelling any computer turn in progress
 var aiRunning = false;
 
@@ -141,7 +163,7 @@ function runAITurnIfNeeded() {
     var token = gameToken;
     var isCancelled = function() { return token !== gameToken; };
 
-    AIPlayerFactory.GetAIPlayerInstance(player).playTurn({
+    AIPlayerFactory.GetAIPlayerInstance(player, getLevel()).playTurn({
         stepMs: AI_STEP_MS,
         delay: function(ms) { return new Promise(function(resolve) { setTimeout(resolve, ms); }); },
         isCancelled: isCancelled,

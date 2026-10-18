@@ -14,6 +14,23 @@ var continentFactory = require('./continent.js');
  *   4. Move troops from safe inner regions to the most threatened border region they connect to.
  */
 
+/*
+ * Difficulty levels. None of them cheat: every level gets the same troops and
+ * follows the same rules as a person. They differ only in how well they play.
+ *   randomDraft     share of new troops placed on a random border region instead of the best one
+ *   minEdge         attack only when attackers - 1 exceed defenders by at least this much
+ *   maxConquests    most regions to take in one turn
+ *   keepGoingScore  after the first win, keep attacking only while the best attack scores at least this
+ *   moveTroops      use the Move step
+ *   leaderBonus     extra wish to attack whoever is ahead (most regions)
+ *   blockBonus      extra wish to stop an opponent who is one region from a whole continent
+ */
+var LEVELS = {
+    easy:   { label: "Easy",   randomDraft: 0.6, minEdge: 3, maxConquests: 1,  keepGoingScore: Infinity, moveTroops: false, leaderBonus: 0, blockBonus: 0 },
+    normal: { label: "Normal", randomDraft: 0.3, minEdge: 2, maxConquests: 3,  keepGoingScore: 4,        moveTroops: true,  leaderBonus: 0, blockBonus: 0 },
+    hard:   { label: "Hard",   randomDraft: 0,   minEdge: 1, maxConquests: 50, keepGoingScore: -1,       moveTroops: true,  leaderBonus: 4, blockBonus: 8 },
+};
+
 function allRegions() {
     return continentFactory.getAllContinents().reduce(function (all, c) {
         return all.concat(c.getRegions());
@@ -25,8 +42,9 @@ function regionName(region) {
 }
 
 class AIPlayer {
-    constructor(player) {
+    constructor(player, level) {
         this.player = player;
+        this.level = LEVELS[level] || LEVELS.normal;
     }
 
     owns(region) {
@@ -62,16 +80,40 @@ class AIPlayer {
         if (enemyOwnsCont) value += 7;                          // breaks an enemy continent bonus
         if (enemy.getState().regions.length === 1) value += 10; // knocks a player out
         value -= 0.3 * defender.getTroopCount();               // cheaper targets first
+
+        // Hard: go after the leader, and stop anyone about to complete a continent
+        if (this.level.leaderBonus && this.isLeader(enemy)) value += this.level.leaderBonus;
+        if (this.level.blockBonus && !enemyOwnsCont) {
+            var enemyInCont = contRegions.filter(function (r) { return r.getPlayer().isSame(enemy); }).length;
+            if (enemyInCont === contRegions.length - 1) value += this.level.blockBonus;
+        }
         return value;
     }
 
     /**
-     * Value of attacking now, or null if the attack would not win.
+     * Whether `player` holds the most regions among this AI's opponents.
+     */
+    isLeader(player) {
+        var self = this;
+        var most = 0;
+        var counts = {};
+        allRegions().forEach(function (r) {
+            var owner = r.getPlayer();
+            if (owner.isSame(self.player)) return;
+            counts[owner.getName()] = (counts[owner.getName()] || 0) + 1;
+        });
+        Object.keys(counts).forEach(function (k) { most = Math.max(most, counts[k]); });
+        return counts[player.getName()] === most;
+    }
+
+    /**
+     * Value of attacking now, or null if the attack would not win
+     * (or, on Easy, would not win by a wide enough margin).
      */
     attackScore(attacker, defender, regions) {
         var a = attacker.getTroopCount();
         var d = defender.getTroopCount();
-        if (a - 1 <= d) return null;
+        if (a - 1 - d < this.level.minEdge) return null;
         var remaining = a - 1 - d; // troops that move into the conquered region
 
         // Troops that move in can be hit next turn by the defender's other neighbours.
@@ -106,11 +148,17 @@ class AIPlayer {
         var self = this;
         var best = null;
 
+        // Easy: often just drop the troop on any border region
+        if (this.level.randomDraft && Math.random() < this.level.randomDraft) {
+            var borders = this.player.getState().regions.filter(function (r) { return self.enemyNeighbours(r, regions).length; });
+            if (borders.length) return borders[Math.floor(Math.random() * borders.length)];
+        }
+
         // Prefer a region that can turn into a winning attack with the troops left.
         this.player.getState().regions.forEach(function (region) {
             var a = region.getTroopCount();
             self.enemyNeighbours(region, regions).forEach(function (defender) {
-                var needed = Math.max(0, defender.getTroopCount() + 2 - a);
+                var needed = Math.max(0, defender.getTroopCount() + 1 + self.level.minEdge - a);
                 if (needed > draftLeft) return;
                 var score = self.targetValue(defender, regions) - 0.5 * needed;
                 if (!best || score > best.score) best = { region: region, score: score };
@@ -227,7 +275,8 @@ class AIPlayer {
             var move = this.bestAttack(regions);
             if (!move) break;
             // After the first win (which earns a card), only keep attacking when it pays off.
-            if (conquered > 0 && move.score < 2) break;
+            if (conquered >= this.level.maxConquests) break;
+            if (conquered > 0 && move.score < this.level.keepGoingScore) break;
 
             var from = regionName(move.attacker);
             var to = regionName(move.defender);
@@ -253,7 +302,7 @@ class AIPlayer {
         if (conquered === 0) opts.log(name + " held its positions");
 
         // 4. Move troops toward the front
-        var moves = this.planMoves(regions);
+        var moves = this.level.moveTroops ? this.planMoves(regions) : [];
         if (moves.length) {
             moves.forEach(function (m) {
                 var moved = m.from.moveTroopsTo(m.to, m.count);
@@ -273,9 +322,12 @@ var AIPlayerFactory = {
      * Creates and returns a new instance of an AI player.
      * @returns {AIPlayer} A new AI player instance.
      */
-    GetAIPlayerInstance: function (player) {
-        return new AIPlayer(player);
-    }
+    GetAIPlayerInstance: function (player, level) {
+        return new AIPlayer(player, level);
+    },
+
+    /** Difficulty levels: { easy, normal, hard } with a label each. */
+    LEVELS: LEVELS
 }
 
 module.exports = AIPlayerFactory;
