@@ -1,5 +1,7 @@
 # MyRisk Application
 
+**Play online:** https://ptuomine.github.io/MyRisk/
+
 MyRisk is a JavaScript-based application built with Webpack for efficient bundling and management of assets. This guide provides instructions for setting up, building, and running the app.
 
 ---
@@ -27,3 +29,9 @@ Before you begin, ensure you have the following installed:
 
    node tools/genmap.js
    npm run build
+
+## Publish online (GitHub Pages)
+   The game is static files (index.html, css/, dist/bundle.js), so GitHub Pages can host it for free.
+   One-time setup: repo Settings → Pages → Build and deployment → Deploy from a branch → `master`, folder `/ (root)` → Save.
+   After that, every push to `master` updates https://ptuomine.github.io/MyRisk/ within a minute or two.
+   Remember to run `npm run build` before committing source changes, so `dist/bundle.js` is up to date.
