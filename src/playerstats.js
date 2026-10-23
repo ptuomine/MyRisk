@@ -1,6 +1,7 @@
 var consts = require('./consts');
 var gameplayers = require('./gameplayers');
 var canvas = require('./canvas');
+var gamestate = require('./gamestate');
 var currentplayer = 0;
 
 var gamestats = [];
@@ -93,13 +94,16 @@ var PlayerStats = {
             stat.regcol.innerText = stat.player.getState().regions.length;
             stat.troopcol.innerText = stat.player.getState().getTroopCount();
             stat.draftcol.innerText = stat.player.getState().draft;
-            stat.cardcol.innerText = stat.player.getState().cards.map(c=>c.display).join();
+            stat.cardcol.innerText = stat.player.getState().cards.map(c=>c.display).join(" ");
         });
 
         var nodraftleft = gamestats[currentplayer].player.getState().draft == 0;
-        canvas.enablewar(nodraftleft);
+        var state = gamestate.getGameState();
+        canvas.enablewar(nodraftleft && state == gamestate.StartState);
+        canvas.enablefortify(nodraftleft && state != gamestate.FortifyState);
         canvas.enableendturn(nodraftleft);
-        canvas.enablesellcards(gamestats[currentplayer].player.getState().cards.length >= 3);
+        canvas.enablesellcards(gamestats[currentplayer].player.canTradeNow());
+        require('./turnpanel.js').update();
     },
     /**
      * Advances to the next player and updates the active player in the player table.

@@ -8,7 +8,8 @@ var cards = [];
 var infantry = {
     id: 1,
     points: 2,
-    display: "#"
+    name: "Infantry",
+    display: "I"
 }
 
 /**
@@ -17,7 +18,8 @@ var infantry = {
 var cavalry = {
     id: 2,
     points: 3,
-    display: "£"
+    name: "Cavalry",
+    display: "C"
 }
 
 /**
@@ -26,7 +28,8 @@ var cavalry = {
 var artillery = {
     id: 3,
     points: 4,
-    display: "¤"
+    name: "Artillery",
+    display: "A"
 }
 
 /**
@@ -35,7 +38,8 @@ var artillery = {
 var wildcard = {
     id: 4,
     points: 0,
-    display: "%"
+    name: "Wild",
+    display: "★"
 }
 
 /**

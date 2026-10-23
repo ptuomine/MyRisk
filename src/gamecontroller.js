@@ -1,10 +1,10 @@
 var battle = require('./battle.js');
 var playerstats = require('./playerstats.js');
 var canvas = require('./canvas');
-//var AIPlayerFactory = require('./aiplayer.js');
 
 var attackerSelection;
 var defenderSelection;
+var moveSource; // region troops are moved from in the move phase
 var playerInTurn;
 
 /**
@@ -13,6 +13,29 @@ var playerInTurn;
  */
 function isBattlePossible() {
     return attackerSelection && defenderSelection
+}
+
+var highlighted = []; // regions currently lit up as possible targets
+
+function clearTargets() {
+    highlighted.forEach(function(r) { r.setTarget(false); });
+    highlighted = [];
+}
+
+/**
+ * Lights up the regions bordering `region` that you can attack (enemy regions)
+ * or move troops to (your own regions).
+ */
+function showTargets(region, ownRegions) {
+    clearTargets();
+    if (!region) return;
+    var targets = ownRegions
+        ? region.getConnectedOwnRegions() // moves can go anywhere through your own regions
+        : region.getNeighbours().filter(function(n) { return !n.getPlayer().isSame(playerInTurn); });
+    targets.forEach(function(n) {
+        n.setTarget(true);
+        highlighted.push(n);
+    });
 }
 
 var GameController = {
@@ -31,6 +54,8 @@ var GameController = {
         playerInTurn = playerstats.getFirstPlayer();
         attackerSelection = null;
         defenderSelection = null;
+        moveSource = null;
+        clearTargets();
     },
 
     /**
@@ -38,15 +63,62 @@ var GameController = {
      */
     nextTurn: function() {
         playerInTurn.endTurn();
-        playerInTurn = playerstats.nextPlayer(); // change the player in turn
+        var next = playerstats.nextPlayer(); // change the player in turn
+        if (!next) return; // game over: playerInTurn has won
+        playerInTurn = next;
         playerInTurn.startTurn();
-
-        // if (playerInTurn.isAI) {
-        //     this.executeAIMoves(playerInTurn);
-        // }
 
         attackerSelection = null;
         defenderSelection = null;
+        moveSource = null;
+        clearTargets();
+    },
+
+    /**
+     * Clears any picked regions and highlights (e.g. when going back to place traded troops).
+     */
+    clearSelections: function() {
+        this.startMovePhase();
+    },
+
+    /**
+     * Starts the move phase: clears any attack selection.
+     */
+    startMovePhase: function() {
+        if (attackerSelection) attackerSelection.setSelection(false);
+        if (defenderSelection) defenderSelection.setSelection(false);
+        attackerSelection = null;
+        defenderSelection = null;
+        moveSource = null;
+        clearTargets();
+        canvas.enablebattle(false);
+    },
+
+    /**
+     * Handles a tap in the move phase. Tap one of your regions to pick it up,
+     * then tap any of your regions connected to it through your own regions
+     * to move one troop there per tap.
+     * Tap the picked region again to put it down.
+     * @param {Object} region - The tapped region.
+     */
+    moveTroopClick: function(region) {
+        if (!region.getPlayer().isSame(playerInTurn)) return;
+
+        if (moveSource && moveSource.isSame(region)) {
+            moveSource.setSelection(false);
+            moveSource = null;
+            clearTargets();
+            return;
+        }
+        if (moveSource && moveSource.getConnectedOwnRegions().indexOf(region) !== -1) {
+            moveSource.moveTroopsTo(region, 1);
+            playerstats.updateStats();
+            return;
+        }
+        if (moveSource) moveSource.setSelection(false);
+        moveSource = region;
+        region.setSelection(true);
+        showTargets(region, true);
     },
 
     /**
@@ -55,6 +127,21 @@ var GameController = {
      */
     getPlayerInTurn: function() {
         return playerInTurn;
+    },
+
+    /** The region picked to attack from, or null. */
+    getAttackSelection: function() {
+        return attackerSelection || null;
+    },
+
+    /** The region picked to attack, or null. */
+    getDefendSelection: function() {
+        return defenderSelection || null;
+    },
+
+    /** The region picked to move troops from, or null. */
+    getMoveSource: function() {
+        return moveSource || null;
     },
 
     /**
@@ -67,6 +154,9 @@ var GameController = {
             // Selected false, i.e. deselection
             if (region.getPlayer().isSame(this.getPlayerInTurn())) {
                 attackerSelection = null;
+                if (defenderSelection) defenderSelection.setSelection(false);
+                defenderSelection = null;
+                clearTargets();
             } else {
                 defenderSelection = null;
             }
@@ -77,7 +167,10 @@ var GameController = {
         if (region.getPlayer().isSame(this.getPlayerInTurn())) {
             // Set the attacker
             if (attackerSelection) attackerSelection.setSelection(false); // deselect if already selected
+            if (defenderSelection) defenderSelection.setSelection(false);
+            defenderSelection = null;
             attackerSelection = region;
+            showTargets(region, false);
         } else if (attackerSelection){
             // Attacker already set. Set defender
             if (!attackerSelection.canAttack(region)) {
@@ -111,33 +204,17 @@ var GameController = {
             attackerSelection.setSelection(false);
             attackerSelection = defenderSelection;
             defenderSelection = null;
+            showTargets(attackerSelection, false);
         } else {
             // nothing selected
             attackerSelection.setSelection(false);
             defenderSelection.setSelection(false);
             attackerSelection = null;
             defenderSelection = null;
+            clearTargets();
         }
+        canvas.enablebattle(false);
     },
-    disableHumanInteraction: function() {
-        document.getElementById("gamepanel").style.pointerEvents = "none";
-        document.getElementById("newgame").style.pointerEvents = "auto";
-    },
-    summarizeAIMoves: function() {
-        const summaryElement = document.getElementById("aiMoveList");
-        summaryElement.innerHTML = "";
-        playerInTurn.moveSummary.forEach(move => {
-            const listItem = document.createElement("li");
-            listItem.innerText = move;
-            summaryElement.appendChild(listItem);
-        });
-    },
-    // executeAIMoves: function(player) {
-    //     var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(player);
-    //     aiPlayer.executeTurn();
-    //     //this.disableHumanInteraction();
-    //     this.summarizeAIMoves();
-    // }
 }
 
 module.exports = GameController;

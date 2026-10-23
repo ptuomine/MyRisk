@@ -1,7 +1,7 @@
 var consts = require('./consts');
 var deck = require('./carddeck');
 var util = require('./util');
-var AIPlayerFactory = require('./aiplayer.js');
+var gamestate = require('./gamestate');
 
 /**
  * Represents a player in the game.
@@ -33,6 +33,8 @@ function player(id, name, color) {
         };
         state.cards = [];
         state.draft = consts.TOTAL_TROOPS_EACH;
+        state.tookCards = false;      // knocked a player out this turn and took their cards
+        state.lastElimination = null; // { loser, cards } until the move list has shown it
         cardEarned = false;
     }
 
@@ -146,16 +148,44 @@ function player(id, name, color) {
      * Starts the player's turn and sets the draft count.
      */
     this.startTurn = function () {
+        state.tookCards = false;
+        state.draft += this.getReinforcements().total;
+    }
 
-        // Set the draft count
-        var regionpoints = state.regions.length < 3 ? state.regions.length / 3 : 3;
-        var continentpoints = state.continents.reduce((a, b) => a + b.getContinentPoints(), 0);
-        state.draft += regionpoints + continentpoints;
+    /**
+     * Takes all cards from a player this player has just knocked out.
+     * Those cards can be traded straight away, even in the middle of attacking.
+     * @param {Object} loser - The eliminated player.
+     */
+    this.takeCardsFrom = function (loser) {
+        var taken = loser.getState().cards;
+        loser.getState().cards = [];
+        state.cards = state.cards.concat(taken);
+        state.tookCards = true;
+        state.tookCardsFrom = loser.getName();
+        state.lastElimination = { loser: loser.getName(), cards: taken.length };
+    }
 
-        if (this.isAI) {
-            var aiPlayer = AIPlayerFactory.GetAIPlayerInstance(this);
-            aiPlayer.executeTurn();
-        }
+    /**
+     * Whether the player may trade cards right now: in the Draft step, or while
+     * attacking right after knocking a player out and taking their cards.
+     */
+    this.canTradeNow = function () {
+        if (!this.getBestTrade()) return false;
+        var phase = gamestate.getGameState();
+        return phase === gamestate.StartState || (phase === gamestate.BattleState && state.tookCards);
+    }
+
+    /**
+     * New troops at the start of a turn: 1 for every 2 regions owned (at least 3),
+     * plus the bonus of every continent held in full.
+     * @returns {{regions: number, regionTroops: number, continents: Array, total: number}}
+     */
+    this.getReinforcements = function () {
+        var regionTroops = Math.max(consts.MIN_REINFORCEMENTS, Math.floor(state.regions.length / consts.REGIONS_PER_TROOP));
+        var continents = state.continents.map(c => ({ name: c.getName(), bonus: c.getContinentPoints() }));
+        var total = regionTroops + continents.reduce((a, c) => a + c.bonus, 0);
+        return { regions: state.regions.length, regionTroops: regionTroops, continents: continents, total: total };
     }
 
     /**
@@ -177,106 +207,64 @@ function player(id, name, color) {
     }
 
     /**
-     * Sells the player's cards and updates the draft count.
+     * Finds the most valuable set of 3 cards the player can trade.
+     * A set is three of the same type or one of each type; a wild card stands in
+     * for any type. Each card is worth its type's points (infantry 2, cavalry 3,
+     * artillery 4); a wild card takes the points of the type it stands in for.
+     * @returns {{cards: Array, troops: number}|null} the cards to hand in and the troops they give, or null
+     */
+    this.getBestTrade = function () {
+        var cards = state.cards;
+        var types = deck.AllTreeCards; // artillery, cavalry, infantry: highest points first
+        var best = null;
+        for (var i = 0; i < cards.length; i++)
+            for (var j = i + 1; j < cards.length; j++)
+                for (var k = j + 1; k < cards.length; k++) {
+                    var set = [cards[i], cards[j], cards[k]];
+                    var troops = setValue(set, types);
+                    if (troops > 0 && (!best || troops > best.troops)) best = { cards: set, troops: troops };
+                }
+        return best;
+    }
+
+    /**
+     * Trades the best set of cards for extra troops to place.
+     * @returns {number} troops gained (0 if the player has no set)
      */
     this.sellCards = function () {
-
-        if (state.cards.length < 3) return; // not enough cards
-
-        // number of wild cards
-        var wilds = state.cards.filter(c => c.id == 4).length;
-
-        var allthree = deck.AllTreeCards;
-
-        var permutations = [];
-        var permutatedCards = [];
-
-        if (wilds == 1) {
-            permutations = allthree;
-
-        } else if (wilds == 2) {
-            // Get permutations for two wild cards
-            for (var i = 0; i < allthree.length; i++) {
-                for (var j = i; j < allthree.length; j++) {
-                    var permutation = [allthree[i], allthree[j]];
-                    permutations.push(permutation);
-                }
-            }
-        }
-
-        // Get all cards that are not wild cards
-        var nonwildcards = state.cards.filter(c => c.id != 4);
-        // add the non wild cards to the permutations
-        permutatedCards = permutations.map(p => nonwildcards.concat(p).sort((a, b) => {
-            return b.points - a.points;
-        }));
-
-        // If there are no wild card permutations then use just the one, but sorted
-        if (!permutatedCards.length) permutatedCards = [state.cards.sort((a, b) => {
-            return b.points - a.points;
-        })];
-
-        // Go through all possible permutations of the (wild) cards
-        var validSetsOfThree = [];
-        permutatedCards.forEach(p => {
-            var sets = checkcards(p);
-            validSetsOfThree = validSetsOfThree.concat(sets);
+        var trade = this.getBestTrade();
+        if (!trade) return 0;
+        trade.cards.forEach(function (card) {
+            state.cards.splice(state.cards.indexOf(card), 1); // remove this exact card
         });
-
-        // Atleast one valid set of three was found
-        if (validSetsOfThree.length > 0) {
-
-            function getPoints(set) {
-                return set.reduce((a, b) => a + b.points, 0);
-            }
-
-            // Find the set with best points
-            const bestset = validSetsOfThree.reduce(function (setA, setB) {
-                return (getPoints(setA) > getPoints(setB)) ? setA : setB
-            })
-
-            // trade/sell the cards in the set
-            var points = getPoints(bestset);
-            state.draft += points;
-            bestset.forEach(s => {
-                // find the card with the same amount of points
-                var index = state.cards.findIndex(function (c) {
-                    return c.points == s.points;
-                });
-                if (index == -1) {
-                    // find a wild card instead
-                    index = state.cards.findIndex(function (c) {
-                        return deck.isWildCard(c);
-                    });
-                }
-                state.cards.splice(index, 1); // remove the card from the found index
-            });
-        }
-
-        function checkcards(permutation) {
-
-            // array of valid sets found
-            var setsfound = [];
-
-            // current set
-            var setofthree = permutation.slice(0, 3);
-
-            // all different
-            if (util.isAllUnique(setofthree.map(s => s.id))) {
-                setsfound.push(setofthree);
-            } else
-                // all same
-                if (setofthree.every(c => c.id === setofthree[0].id)) {
-                    setsfound.push(setofthree);
-                }
-            // check next three (if exists)
-            if (permutation.length > 3) {
-                var moresets = checkcards(permutation.slice(1, permutation.length));
-                setsfound = setsfound.concat(moresets);
-            }
-            return setsfound; // no valid set found
-        }
+        state.draft += trade.troops;
+        return trade.troops;
     }
+}
+
+/**
+ * Troops a set of 3 cards is worth, or 0 if it is not a valid set.
+ */
+function setValue(set, types) {
+    var real = set.filter(c => !deck.isWildCard(c));
+    var wilds = set.length - real.length;
+    var ids = real.map(c => c.id);
+    var realPoints = real.reduce((a, c) => a + c.points, 0);
+
+    if (real.length === 0) return types[0].points * 3; // three wilds: best type three times
+
+    if (util.isAllUnique(ids)) {
+        // one of each: wilds take the missing types, best points first
+        var missing = types.filter(t => ids.indexOf(t.id) === -1).slice(0, wilds);
+        var allSame = real.length === 1
+            ? real[0].points * 3 // one real card + 2 wilds can also count as three of that card
+            : 0;
+        return Math.max(realPoints + missing.reduce((a, t) => a + t.points, 0), allSame);
+    }
+    if (ids.every(id => id === ids[0])) {
+        return real[0].points * 3; // three of a kind (wilds fill in)
+    }
+    return 0;
 }
 
 var colors = consts.PLAYER_COLORS;

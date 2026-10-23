@@ -61,6 +61,15 @@ var GamePlayers = {
     reset: function() {
         players.forEach(player=>player.reset());
     },
+    /**
+     * Re-reads the "AI Player" checkboxes so changes apply to the next game.
+     */
+    refreshAIFlags: function() {
+        players.forEach((player, i) => {
+            var aiCheckbox = document.getElementById(`aiPlayer${i + 1}`);
+            player.isAI = !!(aiCheckbox && aiCheckbox.checked);
+        });
+    },
     isAIPlayer: function(player) {
         return player.isAI;
     }

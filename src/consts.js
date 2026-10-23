@@ -1,35 +1,31 @@
 /**
  * Constants used throughout the game.
- * These constants define the dimensions of the game board, player information, and game statistics.
+ * These constants define player information and game statistics. The map itself is in mapdata.js.
  */
 
-var continent_columns = 2; // number of continents on x axis
-var continent_rows = 2; // number of continents on y axis
-var continent_width = 2; // number of regions in continent on x axis
-var continent_height = 2; // number of regions in content on y axis
-var region_width = 50;
-var region_height = 50;
+var mapdata = require('./mapdata.js');
+
 var noplayer = "FREE"
 var players = [ "p1", "p2" ];
 var player_count = 3;
 var player_colors = ['#00af9d','#ffb652','#cd66cc','#66bc29','#0096db','#3a7dda','#ffe100'];
 
-var total_regions = continent_columns * continent_width * continent_rows * continent_height;
-var total_troops_each = total_regions * 1.25;
+var total_regions = mapdata.continents.reduce((n, c) => n + c.regions.length, 0);
+var total_troops_each = Math.floor(total_regions * 1.25); // whole troops only
+
+// Reinforcements each turn: 1 troop per REGIONS_PER_TROOP regions owned, never fewer than MIN_REINFORCEMENTS
+var regions_per_troop = 2;
+var min_reinforcements = 3;
 
 var gamestats = ["player", "continents", "regions", "troops", "drafts", "cards"];
 
 var exports = module.exports = {};
 
-exports.CONTINENT_COLUMNS =  continent_columns;
-exports.CONTINENT_ROWS =  continent_rows;
-exports.CONTINENT_WIDTH =  continent_width;
-exports.CONTINENT_HEIGHT =  continent_height;
-exports.REGION_WIDTH =  region_width;
-exports.REGION_HEIGHT =  region_height;
 exports.PLAYERS = players;
 exports.NOPLAYER = noplayer;
 exports.PLAYER_COLORS = player_colors;
 exports.TOTAL_TROOPS_EACH = total_troops_each;
+exports.REGIONS_PER_TROOP = regions_per_troop;
+exports.MIN_REINFORCEMENTS = min_reinforcements;
 exports.PLAYER_COUNT = player_count;
 exports.GAMESTATS_HEADINGS = gamestats;

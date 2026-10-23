@@ -1,37 +1,51 @@
 var consts = require('./consts.js');
 
+var SVG_NS = "http://www.w3.org/2000/svg";
+
 /**
  * Represents a continent in the game.
  * @constructor
- * @param {number} row - The row number of the continent.
- * @param {number} col - The column number of the continent.
+ * @param {Object} data - The continent's map data: id, name, bonus, outline, label.
  */
-var Continent = function (row, col) {
-
-    var row = row;
-    var col = col;
-
-    var cont_width = consts.CONTINENT_WIDTH * consts.REGION_WIDTH;
-    var cont_height = consts.CONTINENT_HEIGHT * consts.REGION_HEIGHT;
+var Continent = function (data) {
 
     var owner = consts.NOPLAYER;
 
     var regions = [];
 
+    var regionLayer;
+    var labelText;
+
     /**
-     * Creates and returns the HTML element representing the continent.
-     * @returns {HTMLElement} The continent element.
+     * Creates the SVG group for the continent: its coastline, its regions and its name.
+     * @returns {SVGElement} The continent element.
      */
     function getContinentElement() {
-        var cont = document.createElement("div");
-        cont.id = "continent_" + row + "_" + col;
-        cont.style.height = cont_height + "px";
-        cont.style.width = cont_width + "px";
-        cont.style.border = "3px solid #d3d3d3";
-        cont.style.color = "blue";
-        cont.classList.add("Column");
+        var g = document.createElementNS(SVG_NS, "g");
+        g.setAttribute("id", "continent-" + data.id);
+        g.setAttribute("class", "continent");
 
-        return cont;
+        var coast = document.createElementNS(SVG_NS, "path");
+        coast.setAttribute("d", data.outline);
+        coast.setAttribute("class", "coast");
+        g.appendChild(coast);
+
+        regionLayer = document.createElementNS(SVG_NS, "g");
+        g.appendChild(regionLayer);
+
+        var coastline = document.createElementNS(SVG_NS, "path");
+        coastline.setAttribute("d", data.outline);
+        coastline.setAttribute("class", "coastline");
+        g.appendChild(coastline);
+
+        labelText = document.createElementNS(SVG_NS, "text");
+        labelText.setAttribute("x", data.label[0]);
+        labelText.setAttribute("y", data.label[1]);
+        labelText.setAttribute("class", "continent-name");
+        labelText.textContent = data.name + "  +" + data.bonus;
+        g.appendChild(labelText);
+
+        return g;
     }
 
     /**
@@ -71,7 +85,14 @@ var Continent = function (row, col) {
      * @returns {string} The ID of the continent.
      */
     this.getId = function () {
-        return row + "_" + col;
+        return data.id;
+    }
+
+    /**
+     * Returns the name of the continent, e.g. "Nordhavn".
+     */
+    this.getName = function () {
+        return data.name;
     }
 
     /**
@@ -79,39 +100,17 @@ var Continent = function (row, col) {
      * @param {Object} region - The region to be added.
      */
     this.addRegion = function (region) {
-        this.element.appendChild(region.element);
+        regionLayer.appendChild(region.element);
         regions.push(region);
     }
 
-    /**
-     * Adds a new line break to the continent element.
-     */
-    this.addNewLine = function () {
-        this.element.appendChild(document.createElement("br"));
-    }
-
-    /**
-     * Returns the column number of the continent.
-     * @returns {number} The column number of the continent.
-     */
-    this.getColumn = function () {
-        return col;
-    }
-
-    /**
-     * Returns the row number of the continent.
-     * @returns {number} The row number of the continent.
-     */
-    this.getRow = function () {
-        return row;
-    }
 
     /**
      * Returns the points awarded for owning the continent.
      * @returns {number} The points awarded for owning the continent.
      */
     this.getContinentPoints = function () {
-        return Math.floor(regions.length / 2);
+        return data.bonus;
     }
 
     /**
@@ -143,12 +142,11 @@ var ContinentFactory = {
 
     /**
      * Creates and returns a new instance of a continent.
-     * @param {number} row - The row number of the continent.
-     * @param {number} col - The column number of the continent.
+     * @param {Object} data - The continent's map data.
      * @returns {Continent} A new continent instance.
      */
-    createContinentInstance(row, col) {
-        var newContinent = new Continent(row, col);
+    createContinentInstance(data) {
+        var newContinent = new Continent(data);
         continents.push(newContinent);
         return newContinent;
     },
